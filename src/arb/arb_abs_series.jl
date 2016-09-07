@@ -327,8 +327,31 @@ end
 #
 ###############################################################################
 
+function ^(a::arb_abs_series, b::arb)
+   p = a.prec
+   z = parent(a)()
+   z.prec = p
+   bitprec = prec(parent(a))
+   ccall((:arb_poly_pow_arb_series, :libarb), Void, 
+                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Ptr{arb}, Int, Int), 
+               &z, &a, &b, p, bitprec)
+   return z
+end
+
+function ^(a::arb_abs_series, b::arb_abs_series)
+   check_parent(a, b)
+   p = min(a.prec, b.prec)
+   z = parent(a)()
+   z.prec = p
+   bitprec = prec(parent(a))
+   ccall((:arb_poly_pow_series, :libarb), Void, 
+                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Ptr{arb_abs_series}, Int, Int), 
+               &z, &a, &b, p, bitprec)
+   return z
+end
+
 function ^(a::arb_abs_series, b::Int)
-   b < 0 && throw(DomainError())
+   b < 0 && return a ^ base_ring(parent(a))(b)
    z = parent(a)()
    z.prec = a.prec
    bitprec = prec(parent(a))
@@ -338,6 +361,8 @@ function ^(a::arb_abs_series, b::Int)
    set_prec!(z, precision(a))
    return z
 end
+
+# todo: more coercions
 
 ###############################################################################
 #
