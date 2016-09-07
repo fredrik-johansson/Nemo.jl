@@ -91,8 +91,8 @@ function deepcopy(a::arb_abs_series)
 end
 
 function isgen(a::arb_abs_series)
-   return precision(a) == 0 || (coeff(a, 0) == 0 &&
-        (precision(a) == 1 || (length(a) == 2 && coeff(a, 1) == 1)))
+   return precision(a) == 0 || (precision(a) == 1 && iszero(a)) ||
+      ccall((:arb_poly_is_x, :libarb), Bool, (Ptr{arb_abs_series}, ), &a)
 end
 
 iszero(a::arb_abs_series) = length(a) == 0
@@ -100,17 +100,17 @@ iszero(a::arb_abs_series) = length(a) == 0
 isunit(a::arb_abs_series) = valuation(a) == 0 && isunit(coeff(a, 0))
 
 function isone(a::arb_abs_series)
-   return precision(a) == 0 || (length(a) == 1 && coeff(a, 0) == 0)
+   return precision(a) == 0 ||
+      ccall((:arb_poly_is_one, :libarb), Bool, (Ptr{arb_abs_series}, ), &a)
 end
 
-# todo: write an arb_poly_valuation
 function valuation(a::arb_abs_series)
-   for i = 1:length(a)
-      if !iszero(coeff(a, i - 1))
-         return i - 1
-      end
+   v = ccall((:arb_poly_valuation, :libarb), Int, (Ptr{arb_abs_series}, ), &a)
+   if v == -1
+      return precision(a)
+   else
+      return v
    end
-   return precision(a)
 end
 
 ###############################################################################
@@ -188,11 +188,6 @@ function +(a::arb_abs_series, b::arb_abs_series)
    lenb = length(b)
          
    p = min(a.prec, b.prec)
-
-   lena = min(lena, p)
-   lenb = min(lenb, p)
-
-   lenz = max(lena, lenb)
    z = parent(a)()
    z.prec = p
 
@@ -200,7 +195,7 @@ function +(a::arb_abs_series, b::arb_abs_series)
 
    ccall((:arb_poly_add_series, :libarb), Void, 
                 (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Ptr{arb_abs_series}, Int, Int), 
-               &z, &a, &b, lenz, bitprec)
+               &z, &a, &b, p, bitprec)
    return z
 end
 
@@ -210,19 +205,14 @@ function -(a::arb_abs_series, b::arb_abs_series)
    lenb = length(b)
          
    p = min(a.prec, b.prec)
- 
-   lena = min(lena, p)
-   lenb = min(lenb, p)
-
-   lenz = max(lena, lenb)
    z = parent(a)()
    z.prec = p
 
    bitprec = prec(parent(a))
 
    ccall((:arb_poly_sub_series, :libarb), Void, 
-                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Ptr{arb_abs_series}, Int), 
-               &z, &a, &b, lenz)
+                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Ptr{arb_abs_series}, Int, Int), 
+               &z, &a, &b, p, bitprec)
    return z
 end
 
@@ -343,7 +333,7 @@ function ^(a::arb_abs_series, b::Int)
    z.prec = a.prec
    bitprec = prec(parent(a))
    ccall((:arb_poly_pow_ui_trunc_binexp, :libarb), Void, 
-                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, Uint, Int, Int), 
+                (Ptr{arb_abs_series}, Ptr{arb_abs_series}, UInt, Int, Int), 
                &z, &a, b, z.prec, bitprec)
    set_prec!(z, precision(a))
    return z
