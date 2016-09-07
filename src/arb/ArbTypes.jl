@@ -440,6 +440,81 @@ base_ring(a::AcbPolyRing) = a.base_ring
 
 ################################################################################
 #
+#  Types and memory management for ArbAbsSeriesRing
+#
+################################################################################
+
+const ArbAbsSeriesRingID = ObjectIdDict()
+
+type ArbAbsSeriesRing <: SeriesRing{arb}
+  base_ring::ArbField
+  prec_max::Int
+  S::Symbol
+
+  function ArbAbsSeriesRing(R::ArbField, prec::Int, S::Symbol)
+    try
+      return ArbAbsSeriesRingID[R, prec, S]::ArbAbsSeriesRing
+    catch
+      ArbAbsSeriesRingID[R, prec, S] = new(R,prec,S)
+      return ArbAbsSeriesRingID[R, prec, S]::ArbAbsSeriesRing
+    end
+  end
+end
+
+type arb_abs_series <: SeriesElem{arb}
+  coeffs::Ptr{Void}
+  length::Int
+  alloc::Int
+  prec::Int
+  parent::ArbAbsSeriesRing
+
+  function arb_abs_series()
+    z = new()
+    ccall((:arb_poly_init, :libarb), Void, (Ptr{arb_abs_series}, ), &z)
+    finalizer(z, _arb_abs_series_clear_fn)
+    return z
+  end
+
+  function arb_abs_series(x::Array{arb, 1}, len::Int, prec::Int)
+    z = new() 
+    ccall((:arb_poly_init, :libarb), Void, (Ptr{arb_abs_series}, ), &z)
+    for i = 1:len
+        ccall((:arb_poly_set_coeff_arb, :libarb), Void,
+                (Ptr{arb_abs_series}, Int, Ptr{arb}), &z, i - 1, &x[i])
+    end
+    z.prec = prec
+    finalizer(z, _arb_abs_series_clear_fn)
+    return z
+  end
+
+  function arb_abs_series(x::arb_abs_series)
+    z = new() 
+    ccall((:arb_poly_init, :libarb), Void, (Ptr{arb_abs_series}, ), &z)
+    ccall((:arb_poly_set, :libarb), Void, (Ptr{arb_abs_series}, Ptr{arb_abs_series}), &z, &x)
+    finalizer(z, _arb_abs_series_clear_fn)
+    return z
+  end
+
+end
+
+function _arb_abs_series_clear_fn(x::arb_abs_series)
+  ccall((:arb_poly_clear, :libarb), Void, (Ptr{arb_abs_series}, ), &x)
+end
+
+parent(x::arb_abs_series) = x.parent
+
+elem_type(x::ArbAbsSeriesRing) = arb_series
+
+var(x::ArbAbsSeriesRing) = x.S
+
+prec(x::ArbAbsSeriesRing) = prec(x.base_ring)
+
+max_precision(x::ArbAbsSeriesRing) = x.max_prec
+
+base_ring(a::ArbAbsSeriesRing) = a.base_ring
+
+################################################################################
+#
 #  Types and memory management for ArbMatSpace
 #
 ################################################################################

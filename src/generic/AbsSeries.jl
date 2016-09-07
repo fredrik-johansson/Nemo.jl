@@ -202,7 +202,6 @@ end
 
 function show{T <: RingElem}(io::IO, x::GenAbsSeries{T})
    len = length(x)
-
    if len == 0
       print(io, zero(base_ring(x)))
    else
