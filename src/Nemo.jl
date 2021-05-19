@@ -393,6 +393,8 @@ include("antic/AnticTypes.jl")
 
 include("arb/ArbTypes.jl")
 
+include("calcium/CalciumTypes.jl")
+
 #include("ambiguities.jl") # remove ambiguity warnings
 
 include("flint/adhoc.jl")
