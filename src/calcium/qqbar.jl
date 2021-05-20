@@ -4,7 +4,7 @@
 #
 ###############################################################################
 
-export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer
+export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand
 
 ###############################################################################
 #
@@ -141,6 +141,36 @@ function minpoly(R::FmpqPolyRing, x::qqbar)
    z = R()
    ccall((:fmpq_poly_set_fmpz_poly, libflint), Nothing, (Ref{fmpq_poly}, Ref{qqbar}, ), z, x)
    return z
+end
+
+###############################################################################
+#
+#   Random generation
+#
+###############################################################################
+
+function rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
+   state = _flint_rand_states[Threads.threadid()]
+   x = R()
+
+   degree <= 0 && error("degree must be positive")
+   bits <= 0 && error("bits must be positive")
+
+   if randtype == :null
+      ccall((:qqbar_randtest, libcalcium), Nothing,
+          (Ref{qqbar}, Ptr{Cvoid}, Int, Int), x, state.ptr, degree, bits)
+   elseif randtype == :real
+      ccall((:qqbar_randtest_real, libcalcium), Nothing,
+          (Ref{qqbar}, Ptr{Cvoid}, Int, Int), x, state.ptr, degree, bits)
+   elseif randtype == :nonreal
+      degree < 2 && error("nonreal requires degree >= 2")
+      ccall((:qqbar_randtest_nonreal, libcalcium), Nothing,
+          (Ref{qqbar}, Ptr{Cvoid}, Int, Int), x, state.ptr, degree, bits)
+   else
+      error("randtype not defined")
+   end
+
+   return x
 end
 
 ###############################################################################

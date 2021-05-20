@@ -26,7 +26,7 @@ end
 end
 
 
-@testset "fmpq.manipulation" begin
+@testset "qqbar.manipulation" begin
    R = CalciumQQBar
 
    @test iszero(R(0))
@@ -63,4 +63,26 @@ end
    @test_throws DomainError (root_of_unity(R, 0, 1))
 
 end
+
+@testset "qqbar.rand" begin
+   R = CalciumQQBar
+
+   for i=1:10
+      x = rand(CalciumQQBar, degree=5, bits=5)
+      @test degree(x) <= 5
+   end
+
+   for i=1:10
+      x = rand(CalciumQQBar, degree=5, bits=5, randtype=:real)
+      @test isreal(x)
+   end
+
+   for i=1:10
+      x = rand(CalciumQQBar, degree=5, bits=5, randtype=:nonreal)
+      # todo: need to upgrade Calcium
+      # @test !isreal(x)
+   end
+
+end
+
 
