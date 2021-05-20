@@ -28,3 +28,26 @@ efficient internal representations automatically.
 The minimal polynomial representation will still be available
 since it provides canonical forms with predictable behavior.
 
+## Algebraic number functionality
+
+### Examples
+
+Solving the quintic equation:
+
+```julia
+julia> R, x = PolynomialRing(QQ, "x")
+(Univariate Polynomial Ring in x over Rational Field, x)
+
+julia> v = roots(x^5-x-1, CalciumQQBar)
+5-element Array{qqbar,1}:
+
+1.16730 (deg 5)
+ 0.181232 + 1.08395*I (deg 5)
+ 0.181232 - 1.08395*I (deg 5)
+ -0.764884 + 0.352472*I (deg 5)
+ -0.764884 - 0.352472*I (deg 5)
+
+julia> v[1]^5 - v[1] - 1 == 0
+true
+```
+

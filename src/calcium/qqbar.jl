@@ -103,6 +103,10 @@ needs_parentheses(x::qqbar) = false
 #
 ###############################################################################
 
+zero(a::CalciumQQBarField) = a(0)
+
+one(a::CalciumQQBarField) = a(1)
+
 function degree(x::qqbar)
    return ccall((:qqbar_degree, libcalcium), Int, (Ref{qqbar}, ), x)
 end
@@ -220,6 +224,11 @@ function ^(a::qqbar, b::qqbar)
    return z
 end
 
+# todo: want qqbar_pow_fmpz, qqbar_pow_fmpq, qqbar_pow_si
+^(a::qqbar, b::fmpz) = a ^ qqbar(b)
+^(a::qqbar, b::fmpq) = a ^ qqbar(b)
+^(a::qqbar, b::Int) = a ^ qqbar(b)
+
 ###############################################################################
 #
 #   Exact division
@@ -280,6 +289,80 @@ function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
    return z
 end
 
+function qqbar_vec(n::Int)
+   return ccall((:_qqbar_vec_init, libcalcium), Ptr{qqbar_struct}, (Int,), n)
+end
+
+function array(R::CalciumQQBarField, v::Ptr{qqbar_struct}, n::Int)
+   r = Vector{qqbar}(undef, n)
+   for i=1:n
+       r[i] = R()
+       ccall((:qqbar_set, libcalcium), Nothing, (Ref{qqbar}, Ptr{qqbar_struct}),
+           r[i], v + (i-1)*sizeof(qqbar_struct))
+   end
+   return r
+end
+
+function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
+   ccall((:_qqbar_vec_clear, libcalcium), Nothing, (Ptr{qqbar_struct}, Int), v, n)
+end
+
+function roots(f::fmpz_poly, R::CalciumQQBarField)
+    deg = degree(f)
+
+    if deg <= 0
+        return Array{qqbar}(undef, 0)
+    end
+
+    roots = qqbar_vec(deg)
+    ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
+
+    res = array(R, roots, deg)
+    qqbar_vec_clear(roots, deg)
+    return res
+end
+
+# todo: move this
+function numerator(a::fmpq_poly)
+   z = fmpz_poly()
+   ccall((:fmpq_poly_get_numerator, libflint), Nothing,
+         (Ref{fmpz_poly}, Ref{fmpq_poly}), z, a)
+   return z
+end
+
+function roots(f::fmpq_poly, R::CalciumQQBarField)
+    return roots(numerator(f), R)
+end
+
+###############################################################################
+#
+#   Unsafe functions
+#
+###############################################################################
+
+function zero!(z::qqbar)
+   ccall((:qqbar_zero, libcalcium), Nothing, (Ref{qqbar},), z)
+   return z
+end
+
+function mul!(z::qqbar, x::qqbar, y::qqbar)
+   ccall((:qqbar_mul, libcalcium), Nothing,
+                (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, x, y)
+   return z
+end
+
+function addeq!(z::qqbar, x::qqbar)
+   ccall((:qqbar_add, libcalcium), Nothing,
+                (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, z, x)
+   return z
+end
+
+function add!(z::qqbar, x::qqbar, y::qqbar)
+   ccall((:qqbar_add, libcalcium), Nothing,
+                (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, x, y)
+   return z
+end
+
 ###############################################################################
 #
 #   Parent object call overloads
@@ -293,4 +376,7 @@ end
 (a::CalciumQQBarField)(b::fmpz) = qqbar(b)
 
 (a::CalciumQQBarField)(b::fmpq) = qqbar(b)
+
+(a::CalciumQQBarField)(b::qqbar) = b
+
 

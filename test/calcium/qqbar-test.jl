@@ -62,6 +62,9 @@ end
    @test_throws DomainError (root_of_unity(R, 0))
    @test_throws DomainError (root_of_unity(R, 0, 1))
 
+   v = roots(x^5-x-1, CalciumQQBar)
+   @test v[1]^5 - v[1] - 1 == 0
+
 end
 
 @testset "qqbar.rand" begin
