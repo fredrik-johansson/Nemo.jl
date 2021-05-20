@@ -323,7 +323,7 @@ function roots(f::fmpz_poly, R::CalciumQQBarField)
 end
 
 # todo: move this
-function numerator(a::fmpq_poly)
+function _numerator(a::fmpq_poly)
    z = fmpz_poly()
    ccall((:fmpq_poly_get_numerator, libflint), Nothing,
          (Ref{fmpz_poly}, Ref{fmpq_poly}), z, a)
@@ -331,7 +331,7 @@ function numerator(a::fmpq_poly)
 end
 
 function roots(f::fmpq_poly, R::CalciumQQBarField)
-    return roots(numerator(f), R)
+    return roots(_numerator(f), R)
 end
 
 ###############################################################################
@@ -378,5 +378,4 @@ end
 (a::CalciumQQBarField)(b::fmpq) = qqbar(b)
 
 (a::CalciumQQBarField)(b::qqbar) = b
-
 
