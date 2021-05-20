@@ -51,5 +51,16 @@ end
    @test minpoly(ZZx, u) == x^2 - 2
    @test minpoly(QQy, u) == y^2 - 2
 
+   @test root(qqbar(-1), 3) == root_of_unity(R, 6)
+   @test root_of_unity(R, 4) == i
+   @test root_of_unity(R, 4, 3) == -i
+
+   @test_throws DivideError (R(1) // R(0))
+   @test_throws DomainError (R(0) ^ R(-1))
+   @test_throws DomainError (root(R(1), 0))
+   @test_throws DomainError (u ^ u)
+   @test_throws DomainError (root_of_unity(R, 0))
+   @test_throws DomainError (root_of_unity(R, 0, 1))
+
 end
 

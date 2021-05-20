@@ -186,7 +186,7 @@ function ^(a::qqbar, b::qqbar)
    z = qqbar()
    ok = Bool(ccall((:qqbar_pow, libcalcium), Cint,
          (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, a, b))
-   !ok && throw(DomainError)
+   !ok && throw(DomainError((a, b)))
    return z
 end
 
@@ -208,6 +208,17 @@ div(a::qqbar, b::qqbar) = divexact(a, b)
 
 ###############################################################################
 #
+#   Comparison
+#
+###############################################################################
+
+function ==(a::qqbar, b::qqbar)
+   return Bool(ccall((:qqbar_equal, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b))
+end
+
+###############################################################################
+#
 #   Roots
 #
 ###############################################################################
@@ -219,21 +230,21 @@ function sqrt(a::qqbar)
 end
 
 function root(a::qqbar, n::Int)
-   n <= 0 && throw(DomainError())
+   n <= 0 && throw(DomainError(n))
    z = qqbar()
    ccall((:qqbar_root_ui, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}, UInt), z, a, n)
    return z
 end
 
 function root_of_unity(C::CalciumQQBarField, n::Int)
-   n <= 0 && throw(DomainError())
+   n <= 0 && throw(DomainError(n))
    z = qqbar()
    ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, 1, n)
    return z
 end
 
 function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
-   n <= 0 && throw(DomainError())
+   n <= 0 && throw(DomainError(n))
    z = qqbar()
    ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, k, n)
    return z
