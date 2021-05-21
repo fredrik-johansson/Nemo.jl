@@ -6,7 +6,7 @@
 
 export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
 export csgn, sign_real, sign_imag, fmpq, fmpz
-export conjugates, eigenvalues
+export conjugates, eigenvalues, guess
 
 ###############################################################################
 #
@@ -574,65 +574,89 @@ function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
 end
 
 function roots(f::fmpz_poly, R::CalciumQQBarField)
-    deg = degree(f)
-    if deg <= 0
-        return Array{qqbar}(undef, 0)
-    end
-    roots = qqbar_vec(deg)
-    ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
-    res = array(R, roots, deg)
-    qqbar_vec_clear(roots, deg)
-    return res
+   deg = degree(f)
+   if deg <= 0
+      return Array{qqbar}(undef, 0)
+   end
+   roots = qqbar_vec(deg)
+   ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
+   res = array(R, roots, deg)
+   qqbar_vec_clear(roots, deg)
+   return res
 end
 
 function roots(f::fmpq_poly, R::CalciumQQBarField)
-    deg = degree(f)
-    if deg <= 0
-        return Array{qqbar}(undef, 0)
-    end
-    roots = qqbar_vec(deg)
-    ccall((:qqbar_roots_fmpq_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_poly}, Int), roots, f, 0)
-    res = array(R, roots, deg)
-    qqbar_vec_clear(roots, deg)
-    return res
+   deg = degree(f)
+   if deg <= 0
+      return Array{qqbar}(undef, 0)
+   end
+   roots = qqbar_vec(deg)
+   ccall((:qqbar_roots_fmpq_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_poly}, Int), roots, f, 0)
+   res = array(R, roots, deg)
+   qqbar_vec_clear(roots, deg)
+   return res
 end
 
 function conjugates(a::qqbar)
-    deg = degree(a)
-    if deg == 1
-        return [a]
-    end
-    conjugates = qqbar_vec(deg)
-    ccall((:qqbar_conjugates, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
-    res = array(parent(a), conjugates, deg)
-    qqbar_vec_clear(conjugates, deg)
-    return res
+   deg = degree(a)
+   if deg == 1
+      return [a]
+   end
+   conjugates = qqbar_vec(deg)
+   ccall((:qqbar_conjugates, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
+   res = array(parent(a), conjugates, deg)
+   qqbar_vec_clear(conjugates, deg)
+   return res
 end
 
 function eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
-    n = nrows(A)
-    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
-    if n == 0
-        return Array{qqbar}(undef, 0)
-    end
-    roots = qqbar_vec(n)
-    ccall((:qqbar_eigenvalues_fmpz_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_mat}, Int), roots, A, 0)
-    res = array(R, roots, n)
-    qqbar_vec_clear(roots, n)
-    return res
+   n = nrows(A)
+   !issquare(A) && throw(DomainError(A, "a square matrix is required"))
+   if n == 0
+      return Array{qqbar}(undef, 0)
+   end
+   roots = qqbar_vec(n)
+   ccall((:qqbar_eigenvalues_fmpz_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_mat}, Int), roots, A, 0)
+   res = array(R, roots, n)
+   qqbar_vec_clear(roots, n)
+   return res
 end
 
 function eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
-    n = nrows(A)
-    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
-    if n == 0
-        return Array{qqbar}(undef, 0)
-    end
-    roots = qqbar_vec(n)
-    ccall((:qqbar_eigenvalues_fmpq_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_mat}, Int), roots, A, 0)
-    res = array(R, roots, n)
-    qqbar_vec_clear(roots, n)
-    return res
+   n = nrows(A)
+   !issquare(A) && throw(DomainError(A, "a square matrix is required"))
+   if n == 0
+      return Array{qqbar}(undef, 0)
+   end
+   roots = qqbar_vec(n)
+   ccall((:qqbar_eigenvalues_fmpq_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_mat}, Int), roots, A, 0)
+   res = array(R, roots, n)
+   qqbar_vec_clear(roots, n)
+   return res
+end
+
+###############################################################################
+#
+#   Guessing
+#
+###############################################################################
+
+function guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
+   prec = precision(parent(x))
+   if maxbits <= 0
+      maxbits = prec
+   end
+   res = qqbar()
+   found = Bool(ccall((:qqbar_guess, libcalcium), Cint, (Ref{qqbar}, Ref{acb}, Int, Int, Int, Int), res, x, maxdeg, maxbits, 0, prec))
+   if !found
+      error("No suitable algebraic number found")
+   end
+   return res
+end
+
+function guess(R::CalciumQQBarField, x::arb, maxdeg::Int, maxbits::Int=0)
+   CC = AcbField(precision(parent(x)))
+   return guess(R, CC(x), maxdeg, maxbits)
 end
 
 ###############################################################################
