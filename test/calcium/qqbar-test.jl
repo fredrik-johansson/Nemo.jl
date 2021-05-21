@@ -87,6 +87,59 @@ end
 
 end
 
+@testset "qqbar.adhoc-operations" begin
+   R = CalciumQQBar
+
+   @test qqbar(2) + qqbar(3) == 5
+   @test qqbar(2) + 3 == 5
+   @test qqbar(2) + fmpz(3) == 5
+   @test qqbar(2) + fmpq(3) == 5
+   @test 3 + qqbar(2) == 5
+   @test fmpz(3) + qqbar(2) == 5
+   @test fmpq(3) + qqbar(2) == 5
+
+   @test qqbar(2) - qqbar(3) == -1
+   @test qqbar(2) - 3 == -1
+   @test qqbar(2) - fmpz(3) == -1
+   @test qqbar(2) - fmpq(3) == -1
+   @test 3 - qqbar(2) == 1
+   @test fmpz(3) - qqbar(2) == 1
+   @test fmpq(3) - qqbar(2) == 1
+
+   @test qqbar(2) * qqbar(3) == 6
+   @test qqbar(2) * 3 == 6
+   @test qqbar(2) * fmpz(3) == 6
+   @test qqbar(2) * fmpq(3) == 6
+   @test 3 * qqbar(2) == 6
+   @test fmpz(3) * qqbar(2) == 6
+   @test fmpq(3) * qqbar(2) == 6
+
+   @test qqbar(6) // qqbar(2) == 3
+   @test qqbar(6) // 2 == 3
+   @test qqbar(6) // fmpz(2) == 3
+   @test qqbar(6) // fmpq(2) == 3
+   @test 6 // qqbar(2) == 3
+   @test fmpz(6) // qqbar(2) == 3
+   @test fmpq(6) // qqbar(2) == 3
+
+   @test qqbar(2) ^ qqbar(3) == 8
+   @test qqbar(2) ^ 3 == 8
+   @test qqbar(2) ^ fmpz(3) == 8
+   @test qqbar(2) ^ fmpq(3) == 8
+   @test 2 ^ qqbar(3) == 8
+   @test fmpz(2) ^ qqbar(3) == 8
+   @test fmpq(2) ^ qqbar(3) == 8
+
+   @test qqbar(2) < qqbar(3)
+   @test qqbar(2) < 3
+   @test qqbar(2) < fmpz(3)
+   @test qqbar(2) < fmpq(3)
+   @test 2 < qqbar(3)
+   @test fmpz(2) < qqbar(3)
+   @test fmpq(2) < qqbar(3)
+
+end
+
 @testset "qqbar.rand" begin
    R = CalciumQQBar
 

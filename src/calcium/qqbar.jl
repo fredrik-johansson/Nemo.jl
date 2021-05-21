@@ -203,10 +203,77 @@ function +(a::qqbar, b::qqbar)
    return z
 end
 
+function +(a::qqbar, b::fmpq)
+   z = qqbar()
+   ccall((:qqbar_add_fmpq, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpq}), z, a, b)
+   return z
+end
+
+function +(a::qqbar, b::fmpz)
+   z = qqbar()
+   ccall((:qqbar_add_fmpz, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpz}), z, a, b)
+   return z
+end
+
+function +(a::qqbar, b::Int)
+   z = qqbar()
+   ccall((:qqbar_add_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
+   return z
+end
+
++(a::fmpq, b::qqbar) = b + a
++(a::fmpz, b::qqbar) = b + a
++(a::Int, b::qqbar) = b + a
+
 function -(a::qqbar, b::qqbar)
    z = qqbar()
    ccall((:qqbar_sub, libcalcium), Nothing,
          (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, a, b)
+   return z
+end
+
+function -(a::qqbar, b::fmpq)
+   z = qqbar()
+   ccall((:qqbar_sub_fmpq, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpq}), z, a, b)
+   return z
+end
+
+function -(a::qqbar, b::fmpz)
+   z = qqbar()
+   ccall((:qqbar_sub_fmpz, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpz}), z, a, b)
+   return z
+end
+
+function -(a::qqbar, b::Int)
+   z = qqbar()
+   ccall((:qqbar_sub_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
+   return z
+end
+
+function -(a::fmpq, b::qqbar)
+   z = qqbar()
+   ccall((:qqbar_fmpq_sub, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{fmpq}, Ref{qqbar}), z, a, b)
+   return z
+end
+
+function -(a::fmpz, b::qqbar)
+   z = qqbar()
+   ccall((:qqbar_fmpz_sub, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{fmpz}, Ref{qqbar}), z, a, b)
+   return z
+end
+
+function -(a::Int, b::qqbar)
+   z = qqbar()
+   ccall((:qqbar_si_sub, libcalcium), Nothing,
+         (Ref{qqbar}, Int, Ref{qqbar}), z, a, b)
    return z
 end
 
@@ -216,6 +283,31 @@ function *(a::qqbar, b::qqbar)
          (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, a, b)
    return z
 end
+
+function *(a::qqbar, b::fmpq)
+   z = qqbar()
+   ccall((:qqbar_mul_fmpq, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpq}), z, a, b)
+   return z
+end
+
+function *(a::qqbar, b::fmpz)
+   z = qqbar()
+   ccall((:qqbar_mul_fmpz, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpz}), z, a, b)
+   return z
+end
+
+function *(a::qqbar, b::Int)
+   z = qqbar()
+   ccall((:qqbar_mul_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
+   return z
+end
+
+*(a::fmpq, b::qqbar) = b * a
+*(a::fmpz, b::qqbar) = b * a
+*(a::Int, b::qqbar) = b * a
 
 function ^(a::qqbar, b::qqbar)
    z = qqbar()
@@ -229,6 +321,9 @@ end
 ^(a::qqbar, b::fmpz) = a ^ qqbar(b)
 ^(a::qqbar, b::fmpq) = a ^ qqbar(b)
 ^(a::qqbar, b::Int) = a ^ qqbar(b)
+^(a::fmpz, b::qqbar) = qqbar(a) ^ b
+^(a::fmpq, b::qqbar) = qqbar(a) ^ b
+^(a::Int, b::qqbar) = qqbar(a) ^ b
 
 ###############################################################################
 #
@@ -244,7 +339,43 @@ function divexact(a::qqbar, b::qqbar)
    return z
 end
 
+function divexact(a::qqbar, b::fmpq)
+   iszero(b) && throw(DivideError())
+   z = qqbar()
+   ccall((:qqbar_div_fmpq, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpq}), z, a, b)
+   return z
+end
+
+function divexact(a::qqbar, b::fmpz)
+   iszero(b) && throw(DivideError())
+   z = qqbar()
+   ccall((:qqbar_div_fmpz, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Ref{fmpz}), z, a, b)
+   return z
+end
+
+function divexact(a::qqbar, b::Int)
+   iszero(b) && throw(DivideError())
+   z = qqbar()
+   ccall((:qqbar_div_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
+   return z
+end
+
 div(a::qqbar, b::qqbar) = divexact(a, b)
+div(a::qqbar, b::fmpq) = divexact(a, b)
+div(a::qqbar, b::fmpz) = divexact(a, b)
+div(a::qqbar, b::Int) = divexact(a, b)
+
+//(a::qqbar, b::qqbar) = divexact(a, b)
+//(a::qqbar, b::fmpq) = divexact(a, b)
+//(a::qqbar, b::fmpz) = divexact(a, b)
+//(a::qqbar, b::Int) = divexact(a, b)
+//(a::fmpq, b::qqbar) = divexact(a, b)
+//(a::fmpz, b::qqbar) = divexact(a, b)
+//(a::Int, b::qqbar) = divexact(a, b)
+
 
 function <<(a::qqbar, b::Int)
    z = qqbar()
@@ -282,6 +413,13 @@ end
 function isless(a::qqbar, b::qqbar)
     return cmp(a, b) < 0
 end
+
+isless(a::qqbar, b::fmpz) = isless(a, qqbar(b))
+isless(a::qqbar, b::fmpq) = isless(a, qqbar(b))
+isless(a::qqbar, b::Int) = isless(a, qqbar(b))
+isless(a::fmpq, b::qqbar) = isless(qqbar(a), b)
+isless(a::fmpz, b::qqbar) = isless(qqbar(a), b)
+isless(a::Int, b::qqbar) = isless(qqbar(a), b)
 
 # todo: name and export the following functions?
 
