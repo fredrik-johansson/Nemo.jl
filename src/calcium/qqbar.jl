@@ -5,7 +5,7 @@
 ###############################################################################
 
 export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
-export csgn, sign_real, sign_imag
+export csgn, sign_real, sign_imag, fmpq, fmpz
 export conjugates
 
 ###############################################################################
@@ -615,6 +615,45 @@ function conjugates(a::qqbar)
     return res
 end
 
+###############################################################################
+#
+#   Conversions
+#
+###############################################################################
+
+function (R::ArbField)(a::qqbar)
+   prec = precision(R)
+   z = R()
+   ccall((:qqbar_get_arb, libcalcium), Nothing, (Ref{arb}, Ref{qqbar}, Int), z, a, prec)
+   !isfinite(z) && throw(DomainError(a, "nonreal algebraic number"))
+   return z
+end
+
+function (R::AcbField)(a::qqbar)
+   prec = precision(R)
+   z = R()
+   ccall((:qqbar_get_acb, libcalcium), Nothing, (Ref{acb}, Ref{qqbar}, Int), z, a, prec)
+   return z
+end
+
+# todo: provide qqbar_get_fmpq, qqbar_get_fmpz in C
+function fmpq(a::qqbar)
+   !isrational(a) && throw(DomainError(a), "nonrational algebraic number")
+   p = fmpz()
+   q = fmpz()
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), p, a, 0)
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, a, 1)
+   ccall((:fmpz_neg, libflint), Nothing, (Ref{fmpz}, Ref{fmpz}), p, p)
+   return p // q
+end
+
+function fmpz(a::qqbar)
+   !isinteger(a) && throw(DomainError(a), "noninteger algebraic number")
+   z = fmpz()
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), z, a, 0)
+   ccall((:fmpz_neg, libflint), Nothing, (Ref{fmpz}, Ref{fmpz}), z, z)
+   return z
+end
 
 ###############################################################################
 #

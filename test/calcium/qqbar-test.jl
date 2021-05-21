@@ -88,6 +88,13 @@ end
    @test conjugates(qqbar(3)) == [qqbar(3)]
    @test conjugates(u) == [u, -u]
 
+   @test fmpz(qqbar(3)) == 3
+   @test fmpq(qqbar(3) // 2) == fmpq(3,2)
+
+   @test ArbField(128)(qqbar(3)) == 3
+   @test AcbField(128)(qqbar(3)) == 3
+   @test_throws DomainError (ArbField(128)(i))
+
 end
 
 @testset "qqbar.adhoc-operations" begin
