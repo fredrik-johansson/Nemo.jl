@@ -6,7 +6,7 @@
 
 export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
 export csgn, sign_real, sign_imag, fmpq, fmpz
-export conjugates
+export conjugates, eigenvalues
 
 ###############################################################################
 #
@@ -575,43 +575,63 @@ end
 
 function roots(f::fmpz_poly, R::CalciumQQBarField)
     deg = degree(f)
-
     if deg <= 0
         return Array{qqbar}(undef, 0)
     end
-
     roots = qqbar_vec(deg)
     ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
-
     res = array(R, roots, deg)
     qqbar_vec_clear(roots, deg)
     return res
 end
 
-# todo: move this
-function _numerator(a::fmpq_poly)
-   z = fmpz_poly()
-   ccall((:fmpq_poly_get_numerator, libflint), Nothing,
-         (Ref{fmpz_poly}, Ref{fmpq_poly}), z, a)
-   return z
-end
-
 function roots(f::fmpq_poly, R::CalciumQQBarField)
-    return roots(_numerator(f), R)
+    deg = degree(f)
+    if deg <= 0
+        return Array{qqbar}(undef, 0)
+    end
+    roots = qqbar_vec(deg)
+    ccall((:qqbar_roots_fmpq_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_poly}, Int), roots, f, 0)
+    res = array(R, roots, deg)
+    qqbar_vec_clear(roots, deg)
+    return res
 end
 
 function conjugates(a::qqbar)
     deg = degree(a)
-
     if deg == 1
         return [a]
     end
-
     conjugates = qqbar_vec(deg)
     ccall((:qqbar_conjugates, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
-
     res = array(parent(a), conjugates, deg)
     qqbar_vec_clear(conjugates, deg)
+    return res
+end
+
+function eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
+    n = nrows(A)
+    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
+    if n == 0
+        return Array{qqbar}(undef, 0)
+    end
+    roots = qqbar_vec(n)
+    ccall((:qqbar_eigenvalues_fmpz_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_mat}, Int), roots, A, 0)
+    res = array(R, roots, n)
+    qqbar_vec_clear(roots, n)
+    return res
+end
+
+function eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
+    n = nrows(A)
+    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
+    if n == 0
+        return Array{qqbar}(undef, 0)
+    end
+    roots = qqbar_vec(n)
+    ccall((:qqbar_eigenvalues_fmpq_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_mat}, Int), roots, A, 0)
+    res = array(R, roots, n)
+    qqbar_vec_clear(roots, n)
     return res
 end
 

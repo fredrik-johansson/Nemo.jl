@@ -85,6 +85,11 @@ end
    v = roots(x^5-x-1, CalciumQQBar)
    @test v[1]^5 - v[1] - 1 == 0
 
+   @test eigenvalues(zero(MatrixSpace(ZZ, 0, 0)), CalciumQQBar) == []
+   @test eigenvalues(zero(MatrixSpace(QQ, 0, 0)), CalciumQQBar) == []
+   @test eigenvalues(ZZ[1 1; 1 -1], CalciumQQBar) == [u, -u]
+   @test eigenvalues(QQ[1 1; 1 -1], CalciumQQBar) == [u, -u]
+
    @test conjugates(qqbar(3)) == [qqbar(3)]
    @test conjugates(u) == [u, -u]
 
