@@ -87,12 +87,32 @@ end
    @test root_of_unity(R, 4) == i
    @test root_of_unity(R, 4, 3) == -i
 
+   @test sinpi(qqbar(1)//6) == qqbar(1)//2
+   @test cospi(qqbar(1)//3) == qqbar(1)//2
+   @test tanpi(qqbar(1)//3) == sqrt(qqbar(3))
+   @test_throws DomainError tanpi(qqbar(1)//2)
+
+   @test atanpi(sqrt(qqbar(3))) == qqbar(1)//3
+   @test asinpi(sqrt(qqbar(2))//2) == qqbar(1)//4
+   @test acospi(sqrt(qqbar(3))//2) == qqbar(1)//6
+   @test log_pi_i(i) == qqbar(1)//2
+
+   @test_throws DomainError atanpi(qqbar(2))
+   @test_throws DomainError asinpi(qqbar(2))
+   @test_throws DomainError acospi(qqbar(2))
+   @test_throws DomainError log_pi_i(qqbar(2))
+
    @test_throws DivideError (R(1) // R(0))
    @test_throws DomainError (R(0) ^ R(-1))
    @test_throws DomainError (root(R(1), 0))
    @test_throws DomainError (u ^ u)
    @test_throws DomainError (root_of_unity(R, 0))
    @test_throws DomainError (root_of_unity(R, 0, 1))
+
+   @test is_root_of_unity(i)
+   @test !is_root_of_unity(qqbar(2))
+   @test root_of_unity_as_args(-i) == (4, 3)
+   @test_throws DomainError root_of_unity_as_args(qqbar(2))
 
    v = roots(x^5-x-1, CalciumQQBar)
    @test v[1]^5 - v[1] - 1 == 0

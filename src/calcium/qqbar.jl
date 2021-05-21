@@ -4,9 +4,10 @@
 #
 ###############################################################################
 
-export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
-export csgn, sign_real, sign_imag, fmpq, fmpz
-export conjugates, eigenvalues, guess
+export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2,
+       csgn, sign_real, sign_imag, fmpq, fmpz, exp_pi_i, atanpi, asinpi, acospi,
+       conjugates, eigenvalues, guess, root_of_unity_as_args, is_root_of_unity,
+       log_pi_i
 
 ###############################################################################
 #
@@ -536,20 +537,6 @@ function root(a::qqbar, n::Int)
    return z
 end
 
-function root_of_unity(C::CalciumQQBarField, n::Int)
-   n <= 0 && throw(DomainError(n))
-   z = qqbar()
-   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, 1, n)
-   return z
-end
-
-function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
-   n <= 0 && throw(DomainError(n))
-   z = qqbar()
-   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, k, n)
-   return z
-end
-
 function qqbar_vec(n::Int)
    return ccall((:_qqbar_vec_init, libcalcium), Ptr{qqbar_struct}, (Int,), n)
 end
@@ -629,6 +616,115 @@ function eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
    qqbar_vec_clear(roots, n)
    return res
 end
+
+###############################################################################
+#
+#   Roots of unity and trigonometric functions
+#
+###############################################################################
+
+function root_of_unity(C::CalciumQQBarField, n::Int)
+   n <= 0 && throw(DomainError(n))
+   z = qqbar()
+   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, 1, n)
+   return z
+end
+
+function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
+   n <= 0 && throw(DomainError(n))
+   z = qqbar()
+   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, k, n)
+   return z
+end
+
+function is_root_of_unity(a::qqbar)
+   return Bool(ccall((:qqbar_is_root_of_unity, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), C_NULL, C_NULL, a))
+end
+
+function root_of_unity_as_args(a::qqbar)
+   p = Vector{Int}(undef, 1)
+   q = Vector{Int}(undef, 1)
+   if !Bool(ccall((:qqbar_is_root_of_unity, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+      throw(DomainError(a, "value is not a root of unity"))
+   end
+   return (q[1], p[1])
+end
+
+function exp_pi_i(a::qqbar)
+   r = fmpq(a)
+   p = Int(numerator(r))
+   q = Int(denominator(r))
+   z = qqbar()
+   ccall((:qqbar_exp_pi_i, libcalcium), Nothing, (Ref{qqbar}, Int, Int), z, p, q)
+   return z
+end
+
+function sinpi(a::qqbar)
+   r = fmpq(a)
+   p = Int(numerator(r))
+   q = Int(denominator(r))
+   z = qqbar()
+   ccall((:qqbar_sin_pi, libcalcium), Nothing, (Ref{qqbar}, Int, Int), z, p, q)
+   return z
+end
+
+function cospi(a::qqbar)
+   r = fmpq(a)
+   p = Int(numerator(r))
+   q = Int(denominator(r))
+   z = qqbar()
+   ccall((:qqbar_cos_pi, libcalcium), Nothing, (Ref{qqbar}, Int, Int), z, p, q)
+   return z
+end
+
+function tanpi(a::qqbar)
+   r = fmpq(a)
+   p = Int(numerator(r))
+   q = Int(denominator(r))
+   z = qqbar()
+   if !Bool(ccall((:qqbar_tan_pi, libcalcium), Cint, (Ref{qqbar}, Int, Int), z, p, q))
+      throw(DomainError(a, "function value is not algebraic"))
+   end
+   return z
+end
+
+function atanpi(a::qqbar)
+   p = Vector{Int}(undef, 1)
+   q = Vector{Int}(undef, 1)
+   if !Bool(ccall((:qqbar_atan_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+      throw(DomainError(a, "function value is not algebraic"))
+   end
+   return qqbar(p[1]) // q[1]
+end
+
+function asinpi(a::qqbar)
+   p = Vector{Int}(undef, 1)
+   q = Vector{Int}(undef, 1)
+   if !Bool(ccall((:qqbar_asin_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+      throw(DomainError(a, "function value is not algebraic"))
+   end
+   return qqbar(p[1]) // q[1]
+end
+
+function acospi(a::qqbar)
+   p = Vector{Int}(undef, 1)
+   q = Vector{Int}(undef, 1)
+   if !Bool(ccall((:qqbar_acos_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+      throw(DomainError(a, "function value is not algebraic"))
+   end
+   return qqbar(p[1]) // q[1]
+end
+
+function log_pi_i(a::qqbar)
+   p = Vector{Int}(undef, 1)
+   q = Vector{Int}(undef, 1)
+   if !Bool(ccall((:qqbar_log_pi_i, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+      throw(DomainError(a, "function value is not algebraic"))
+   end
+   return qqbar(p[1]) // q[1]
+end
+
+
 
 ###############################################################################
 #
