@@ -45,6 +45,26 @@ end
    @test !isreal(i)
    @test is_algebraic_integer(u)
 
+   @test abs(-u) == u
+   @test abs2(u) == 2
+   @test u != i
+   @test sign(2*i) == i
+   @test conj(i) == -i
+   @test real(3+4*i) == 3
+   @test imag(3+4*i) == 4
+   @test csgn(i) == 1
+   @test sign_real(-3+4*i) == -1
+   @test sign_imag(-3+4*i) == 1
+   @test floor(u) == 1
+   @test ceil(u) == 2
+
+   @test (u >> 3) == u // 8
+   @test (u << 3) == 8 * u
+
+   @test u < 2
+   @test u > 1
+   @test_throws DomainError (i > 1)
+
    ZZx, x = PolynomialRing(FlintZZ, "x")
    QQy, y = PolynomialRing(FlintQQ, "x")
 

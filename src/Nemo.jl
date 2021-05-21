@@ -29,7 +29,7 @@ import SHA
 import AbstractAlgebra: div, divrem
 
 # N.B: do not import div, divrem from Base
-import Base: Array, abs, acos, acosh, asin, asinh, atan, atanh, bin, binomial,
+import Base: Array, abs, abs2, acos, acosh, asin, asinh, atan, atanh, bin, binomial,
              ceil, checkbounds, conj, convert, cmp, cos, cosh, cospi, cot,
              coth, dec, deepcopy, deepcopy_internal, denominator,
              expm1, exp, factorial, floor, gcd, gcdx, getindex, hash, hcat,

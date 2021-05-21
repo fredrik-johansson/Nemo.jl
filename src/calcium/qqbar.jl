@@ -4,7 +4,8 @@
 #
 ###############################################################################
 
-export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand
+export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
+export csgn, sign_real, sign_imag
 
 ###############################################################################
 #
@@ -88,7 +89,7 @@ function native_string(x::qqbar)
 end
 
 function show(io::IO, F::CalciumQQBarField)
-  print(io, "Field of algebraic numbers in minimal polynomial representation")
+  print(io, "Field of Algebraic Numbers in minimal polynomial representation")
 end
 
 function show(io::IO, x::qqbar)
@@ -245,6 +246,21 @@ end
 
 div(a::qqbar, b::qqbar) = divexact(a, b)
 
+function <<(a::qqbar, b::Int)
+   z = qqbar()
+   ccall((:qqbar_mul_2exp_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
+   return z
+end
+
+function >>(a::qqbar, b::Int)
+   z = qqbar()
+   ccall((:qqbar_mul_2exp_si, libcalcium), Nothing,
+         (Ref{qqbar}, Ref{qqbar}, Int), z, a, -b)
+   return z
+end
+
+
 ###############################################################################
 #
 #   Comparison
@@ -255,6 +271,117 @@ function ==(a::qqbar, b::qqbar)
    return Bool(ccall((:qqbar_equal, libcalcium), Cint,
                 (Ref{qqbar}, Ref{qqbar}), a, b))
 end
+
+function cmp(a::qqbar, b::qqbar)
+   !isreal(a) && throw(DomainError(a, "comparing nonreal numbers"))
+   !isreal(b) && throw(DomainError(b, "comparing nonreal numbers"))
+   return ccall((:qqbar_cmp_re, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function isless(a::qqbar, b::qqbar)
+    return cmp(a, b) < 0
+end
+
+# todo: name and export the following functions?
+
+function cmp_real(a::qqbar, b::qqbar)
+   return ccall((:qqbar_cmp_re, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function cmp_imag(a::qqbar, b::qqbar)
+   return ccall((:qqbar_cmp_im, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function cmpabs_real(a::qqbar, b::qqbar)
+   return ccall((:qqbar_cmpabs_re, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function cmpabs_imag(a::qqbar, b::qqbar)
+   return ccall((:qqbar_cmpabs_im, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function cmp_root_order(a::qqbar, b::qqbar)
+   return ccall((:qqbar_cmp_root_order, libcalcium), Cint,
+                (Ref{qqbar}, Ref{qqbar}), a, b)
+end
+
+function isless_root_order(a::qqbar, b::qqbar)
+    return cmp_root_order(a, b) < 0
+end
+
+# todo: wrap qqbar_equal_fmpq_poly_val
+
+###############################################################################
+#
+#   Complex parts
+#
+###############################################################################
+
+function real(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_re, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function imag(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_im, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function abs(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_abs, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function conj(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_conj, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function abs2(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_abs2, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function sign(a::qqbar)
+   z = qqbar()
+   ccall((:qqbar_sgn, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
+function csgn(a::qqbar)
+   return qqbar(Int(ccall((:qqbar_csgn, libcalcium), Cint, (Ref{qqbar}, ), a)))
+end
+
+function sign_real(a::qqbar)
+   return qqbar(Int(ccall((:qqbar_sgn_re, libcalcium), Cint, (Ref{qqbar}, ), a)))
+end
+
+function sign_imag(a::qqbar)
+   return qqbar(Int(ccall((:qqbar_sgn_im, libcalcium), Cint, (Ref{qqbar}, ), a)))
+end
+
+function floor(a::qqbar)
+   z = fmpz()
+   ccall((:qqbar_floor, libcalcium), Nothing, (Ref{fmpz}, Ref{qqbar}, ), z, a)
+   return qqbar(z)
+end
+
+function ceil(a::qqbar)
+   z = fmpz()
+   ccall((:qqbar_ceil, libcalcium), Nothing, (Ref{fmpz}, Ref{qqbar}, ), z, a)
+   return qqbar(z)
+end
+
 
 ###############################################################################
 #
