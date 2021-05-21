@@ -85,6 +85,9 @@ end
    v = roots(x^5-x-1, CalciumQQBar)
    @test v[1]^5 - v[1] - 1 == 0
 
+   @test conjugates(qqbar(3)) == [qqbar(3)]
+   @test conjugates(u) == [u, -u]
+
 end
 
 @testset "qqbar.adhoc-operations" begin

@@ -6,6 +6,7 @@
 
 export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2
 export csgn, sign_real, sign_imag
+export conjugates
 
 ###############################################################################
 #
@@ -598,6 +599,22 @@ end
 function roots(f::fmpq_poly, R::CalciumQQBarField)
     return roots(_numerator(f), R)
 end
+
+function conjugates(a::qqbar)
+    deg = degree(a)
+
+    if deg == 1
+        return [a]
+    end
+
+    conjugates = qqbar_vec(deg)
+    ccall((:qqbar_conjugates, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
+
+    res = array(parent(a), conjugates, deg)
+    qqbar_vec_clear(conjugates, deg)
+    return res
+end
+
 
 ###############################################################################
 #
