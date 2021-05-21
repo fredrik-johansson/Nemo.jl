@@ -97,7 +97,7 @@ function show(io::IO, x::qqbar)
    print(io, native_string(x))
 end
 
-needs_parentheses(x::qqbar) = false
+needs_parentheses(x::qqbar) = true
 
 ###############################################################################
 #
@@ -363,11 +363,6 @@ function divexact(a::qqbar, b::Int)
          (Ref{qqbar}, Ref{qqbar}, Int), z, a, b)
    return z
 end
-
-div(a::qqbar, b::qqbar) = divexact(a, b)
-div(a::qqbar, b::fmpq) = divexact(a, b)
-div(a::qqbar, b::fmpz) = divexact(a, b)
-div(a::qqbar, b::Int) = divexact(a, b)
 
 //(a::qqbar, b::qqbar) = divexact(a, b)
 //(a::qqbar, b::fmpq) = divexact(a, b)

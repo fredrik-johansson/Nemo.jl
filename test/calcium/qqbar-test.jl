@@ -4,6 +4,9 @@
    @test elem_type(R) == qqbar
    @test elem_type(CalciumQQBarField) == qqbar
    @test parent_type(qqbar) == CalciumQQBarField
+   @test isdomain_type(qqbar) == true
+   @test base_ring(CalciumQQBar) == CalciumQQBar
+   @test base_ring(qqbar(3)) == CalciumQQBar
 
    @test isa(R, CalciumQQBarField)
 
@@ -23,11 +26,18 @@ end
    a = CalciumQQBar(1)
 
    @test string(a) == "1.00000 (deg 1)"
+   @test string(parent(a)) == "Field of Algebraic Numbers in minimal polynomial representation"
+   @test needs_parentheses(a) == true
 end
 
 
 @testset "qqbar.manipulation" begin
    R = CalciumQQBar
+
+   @test zero(R) == 0
+   @test one(R) == 1
+   @test isa(zero(R), qqbar)
+   @test isa(one(R), qqbar)
 
    @test iszero(R(0))
    @test isone(R(1))
@@ -37,6 +47,8 @@ end
 
    u = sqrt(R(2))
    i = sqrt(R(-1))
+
+   @test canonical_unit(u) == u
 
    @test degree(u) == 2
    @test !isrational(u)
@@ -84,6 +96,14 @@ end
 
    v = roots(x^5-x-1, CalciumQQBar)
    @test v[1]^5 - v[1] - 1 == 0
+
+   v = roots(y^2+1, CalciumQQBar)
+   @test v == [i, -i]
+
+   @test roots(ZZx(0), CalciumQQBar) == []
+   @test roots(ZZx(1), CalciumQQBar) == []
+   @test roots(QQy(0), CalciumQQBar) == []
+   @test roots(QQy(1), CalciumQQBar) == []
 
    @test eigenvalues(zero(MatrixSpace(ZZ, 0, 0)), CalciumQQBar) == []
    @test eigenvalues(zero(MatrixSpace(QQ, 0, 0)), CalciumQQBar) == []
