@@ -33,9 +33,11 @@ isdomain_type(::Type{qqbar}) = true
 #
 ###############################################################################
 
-# todo
-# function Base.hash(a::qqbar, h::UInt)
-# end
+# todo: want a C function for this
+function Base.hash(a::qqbar, h::UInt)
+   R, x = PolynomialRing(FlintZZ, "x")
+   return xor(hash(minpoly(R, a)), h)
+end
 
 ###############################################################################
 #

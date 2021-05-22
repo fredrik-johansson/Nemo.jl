@@ -49,6 +49,7 @@ end
    i = sqrt(R(-1))
 
    @test canonical_unit(u) == u
+   @test hash(u) != hash(i)
 
    @test degree(u) == 2
    @test !isrational(u)
