@@ -7,7 +7,7 @@
 export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2,
        csgn, sign_real, sign_imag, fmpq, fmpz, exp_pi_i, atanpi, asinpi, acospi,
        conjugates, eigenvalues, guess, root_of_unity_as_args, is_root_of_unity,
-       log_pi_i
+       log_pi_i, rand
 
 ###############################################################################
 #
@@ -157,40 +157,85 @@ zero(a::CalciumQQBarField) = a(0)
 
 one(a::CalciumQQBarField) = a(1)
 
+@doc Markdown.doc"""
+    degree(x::qqbar)
+
+Return the degree of the minimal polynomial of *x*.
+"""
 function degree(x::qqbar)
    return ccall((:qqbar_degree, libcalcium), Int, (Ref{qqbar}, ), x)
 end
 
+@doc Markdown.doc"""
+    isrational(x::qqbar)
+
+Return whether *x* is the number 0.
+"""
 function iszero(x::qqbar)
    return Bool(ccall((:qqbar_is_zero, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    isrational(x::qqbar)
+
+Return whether *x* is the number 1.
+"""
 function isone(x::qqbar)
    return Bool(ccall((:qqbar_is_one, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    isrational(x::qqbar)
+
+Return whether *x* is an integer.
+"""
 function isinteger(x::qqbar)
    return Bool(ccall((:qqbar_is_integer, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    isrational(x::qqbar)
+
+Return whether *x* is a rational number.
+"""
 function isrational(x::qqbar)
    return Bool(ccall((:qqbar_is_rational, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    isreal(x::qqbar)
+
+Return whether *x* is a real number.
+"""
 function isreal(x::qqbar)
    return Bool(ccall((:qqbar_is_real, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    is_algebraic_integer(x::qqbar)
+
+Return whether *x* is an algebraic integer.
+"""
 function is_algebraic_integer(x::qqbar)
    return Bool(ccall((:qqbar_is_algebraic_integer, libcalcium), Cint, (Ref{qqbar},), x))
 end
 
+@doc Markdown.doc"""
+    minpoly(R::FmpzPolyRing, x::qqbar)
+
+Return the minimal polynomial of $x$ as an element of the polynomial ring $R$.
+"""
 function minpoly(R::FmpzPolyRing, x::qqbar)
    z = R()
    ccall((:fmpz_poly_set, libflint), Nothing, (Ref{fmpz_poly}, Ref{qqbar}, ), z, x)
    return z
 end
 
+@doc Markdown.doc"""
+    minpoly(R::FmpzPolyRing, x::qqbar)
+
+Return the minimal polynomial of $x$ as an element of the polynomial ring $R$.
+"""
 function minpoly(R::FmpqPolyRing, x::qqbar)
    z = R()
    ccall((:fmpq_poly_set_fmpz_poly, libflint), Nothing, (Ref{fmpq_poly}, Ref{qqbar}, ), z, x)
@@ -203,6 +248,15 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
+
+Return a random algebraic number with degree up to *degree*
+and coefficients up to *bits* in size. By default, both real and
+complex numbers are generated. Set the optional `randtype` to `:real` or
+`:nonreal` to generate a specific type of number. Note that
+nonreal numbers require *degree* at least 2.
+"""
 function rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
    state = _flint_rand_states[Threads.threadid()]
    x = R()
@@ -602,6 +656,14 @@ function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
    ccall((:_qqbar_vec_clear, libcalcium), Nothing, (Ptr{qqbar_struct}, Int), v, n)
 end
 
+@doc Markdown.doc"""
+    roots(f::fmpz_poly, R::CalciumQQBarField)
+
+Return all the roots of the polynomial *f* in the field of algebraic
+numbers *R*. The output array is sorted in the default sort order for
+algebraic numbers. Roots of multiplicity higher than one are repeated
+according to their multiplicity.
+"""
 function roots(f::fmpz_poly, R::CalciumQQBarField)
    deg = degree(f)
    if deg <= 0
@@ -614,6 +676,14 @@ function roots(f::fmpz_poly, R::CalciumQQBarField)
    return res
 end
 
+@doc Markdown.doc"""
+    roots(f::fmpq_poly, R::CalciumQQBarField)
+
+Return all the roots of the polynomial *f* in the field of algebraic
+numbers *R*. The output array is sorted in the default sort order for
+algebraic numbers. Roots of multiplicity higher than one are repeated
+according to their multiplicity.
+"""
 function roots(f::fmpq_poly, R::CalciumQQBarField)
    deg = degree(f)
    if deg <= 0
@@ -626,6 +696,13 @@ function roots(f::fmpq_poly, R::CalciumQQBarField)
    return res
 end
 
+@doc Markdown.doc"""
+    conjugates(a::qqbar)
+
+Return all the roots of the polynomial *f* in the field of algebraic
+numbers *R*. The output array is sorted in the default sort order for
+algebraic numbers.
+"""
 function conjugates(a::qqbar)
    deg = degree(a)
    if deg == 1
@@ -638,6 +715,14 @@ function conjugates(a::qqbar)
    return res
 end
 
+@doc Markdown.doc"""
+    eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
+
+Return all the eigenvalues of the matrix *A* in the field of algebraic
+numbers *R*. The output array is sorted in the default sort order for
+algebraic numbers. Eigenvalues of multiplicity higher than one are repeated
+according to their multiplicity.
+"""
 function eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
    n = nrows(A)
    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
@@ -651,6 +736,14 @@ function eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
    return res
 end
 
+@doc Markdown.doc"""
+    eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
+
+Return all the eigenvalues of the matrix *A* in the field of algebraic
+numbers *R*. The output array is sorted in the default sort order for
+algebraic numbers. Eigenvalues of multiplicity higher than one are repeated
+according to their multiplicity.
+"""
 function eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
    n = nrows(A)
    !issquare(A) && throw(DomainError(A, "a square matrix is required"))
@@ -803,6 +896,13 @@ end
 #
 ###############################################################################
 
+
+@doc Markdown.doc"""
+    (R::ArbField)(a::qqbar)
+
+Convert *a* to a real ball with the precision of the parent field *R*.
+Throws if *a* is not a real number.
+"""
 function (R::ArbField)(a::qqbar)
    prec = precision(R)
    z = R()
@@ -811,6 +911,12 @@ function (R::ArbField)(a::qqbar)
    return z
 end
 
+@doc Markdown.doc"""
+    (R::ArbField)(a::qqbar)
+
+Convert *a* to a complex ball with the precision of the parent field *R*.
+Throws if *a* is not a real number.
+"""
 function (R::AcbField)(a::qqbar)
    prec = precision(R)
    z = R()
@@ -819,6 +925,12 @@ function (R::AcbField)(a::qqbar)
 end
 
 # todo: provide qqbar_get_fmpq, qqbar_get_fmpz in C
+@doc Markdown.doc"""
+    fmpq(a::qqbar)
+
+Convert *a* to a rational number of type *fmpq*.
+Throws if *a* is not a rational number.
+"""
 function fmpq(a::qqbar)
    !isrational(a) && throw(DomainError(a), "nonrational algebraic number")
    p = fmpz()
@@ -829,6 +941,12 @@ function fmpq(a::qqbar)
    return p // q
 end
 
+@doc Markdown.doc"""
+    fmpz(a::qqbar)
+
+Convert *a* to an integer of type *fmpz*.
+Throws if *a* is not an integer.
+"""
 function fmpz(a::qqbar)
    !isinteger(a) && throw(DomainError(a), "noninteger algebraic number")
    z = fmpz()

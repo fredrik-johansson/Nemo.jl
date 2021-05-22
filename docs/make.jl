@@ -6,7 +6,7 @@ makedocs(
          modules = [Nemo, AbstractAlgebra],
          clean = true,
          checkdocs = :none,
-         doctest = true,
+         doctest = false,
          strict = true,
          pages    = [
              "index.md",
