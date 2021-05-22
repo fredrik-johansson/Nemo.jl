@@ -763,6 +763,12 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    root_of_unity(C::CalciumQQBarField, n::Int)
+
+Return the root of unity $e^{2 \pi i / n}$ as an element of the field
+of algebraic numbers *C*.
+"""
 function root_of_unity(C::CalciumQQBarField, n::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()
@@ -770,6 +776,12 @@ function root_of_unity(C::CalciumQQBarField, n::Int)
    return z
 end
 
+@doc Markdown.doc"""
+    root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
+
+Return the root of unity $e^{2 \pi i k / n}$ as an element of the field
+of algebraic numbers *C*.
+"""
 function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()
@@ -777,10 +789,22 @@ function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
    return z
 end
 
+@doc Markdown.doc"""
+    is_root_of_unity(a::qqbar)
+
+Return whether the given algebraic number is a root of unity.
+"""
 function is_root_of_unity(a::qqbar)
    return Bool(ccall((:qqbar_is_root_of_unity, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), C_NULL, C_NULL, a))
 end
 
+@doc Markdown.doc"""
+    root_of_unity_as_args(a::qqbar)
+
+Return a pair of integers (*q*, *p*) such that the given *a* equals
+$e^{2 \pi i p / q}$. The denominator $q$ will be minimal, with
+$0 \le p < q$. Throws if *a* is not a root of unity.
+"""
 function root_of_unity_as_args(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
@@ -790,6 +814,12 @@ function root_of_unity_as_args(a::qqbar)
    return (q[1], p[1])
 end
 
+@doc Markdown.doc"""
+    exp_pi_i(a::qqbar)
+
+Return $e^{\pi i a}$ as an algebraic number.
+Throws if this value is transcendental.
+"""
 function exp_pi_i(a::qqbar)
    r = fmpq(a)
    p = Int(numerator(r))
@@ -799,6 +829,12 @@ function exp_pi_i(a::qqbar)
    return z
 end
 
+@doc Markdown.doc"""
+    sinpi(a::qqbar)
+
+Return $\sin(\pi a)$ as an algebraic number.
+Throws if this value is transcendental.
+"""
 function sinpi(a::qqbar)
    r = fmpq(a)
    p = Int(numerator(r))
@@ -808,6 +844,12 @@ function sinpi(a::qqbar)
    return z
 end
 
+@doc Markdown.doc"""
+    cospi(a::qqbar)
+
+Return $\cos(\pi a)$ as an algebraic number.
+Throws if this value is transcendental.
+"""
 function cospi(a::qqbar)
    r = fmpq(a)
    p = Int(numerator(r))
@@ -817,6 +859,12 @@ function cospi(a::qqbar)
    return z
 end
 
+@doc Markdown.doc"""
+    tanpi(a::qqbar)
+
+Return $\tan(\pi a)$ as an algebraic number.
+Throws if this value is transcendental or undefined.
+"""
 function tanpi(a::qqbar)
    r = fmpq(a)
    p = Int(numerator(r))
@@ -828,6 +876,12 @@ function tanpi(a::qqbar)
    return z
 end
 
+@doc Markdown.doc"""
+    atanpi(a::qqbar)
+
+Return $\operatorname{atan}(a) / \pi$ as an algebraic number.
+Throws if this value is transcendental or undefined.
+"""
 function atanpi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
@@ -837,6 +891,12 @@ function atanpi(a::qqbar)
    return qqbar(p[1]) // q[1]
 end
 
+@doc Markdown.doc"""
+    asinpi(a::qqbar)
+
+Return $\operatorname{asin}(a) / \pi$ as an algebraic number.
+Throws if this value is transcendental.
+"""
 function asinpi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
@@ -846,6 +906,12 @@ function asinpi(a::qqbar)
    return qqbar(p[1]) // q[1]
 end
 
+@doc Markdown.doc"""
+    acospi(a::qqbar)
+
+Return $\operatorname{acos}(a) / \pi$ as an algebraic number.
+Throws if this value is transcendental.
+"""
 function acospi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
@@ -855,6 +921,12 @@ function acospi(a::qqbar)
    return qqbar(p[1]) // q[1]
 end
 
+@doc Markdown.doc"""
+    log_pi_i(a::qqbar)
+
+Return $\log(a) / (\pi i)$ as an algebraic number.
+Throws if this value is transcendental or undefined.
+"""
 function log_pi_i(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
@@ -872,6 +944,26 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
+
+Try to reconstruct an algebraic number from a given numerical enclosure *x*.
+The algorithm looks for candidates up to degree *maxdeg* and with
+coefficients up to size *maxbits* (which defaults to the precision of *x*
+if not given). Throws if no suitable algebraic number can be found.
+
+Guessing typically requires high precision to succeed, and it does not make
+much sense to call this function with input precision smaller than
+$O(maxdeg \cdot maxbits)$.
+If this function succeeds, then the output is guaranteed to be contained in
+the enclosure *x*, but failure does not prove that such an algebric
+number with the specified parameters does not exist.
+
+This function does a single iteration with the target parameters. For best
+performance, one should invoke this function repeatedly with successively
+larger parameters when the size of the intended solution is unknown or
+may be much smaller than a worst-case bound.
+"""
 function guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
    prec = precision(parent(x))
    if maxbits <= 0
@@ -885,6 +977,26 @@ function guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
    return res
 end
 
+@doc Markdown.doc"""
+    guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
+
+Try to reconstruct an algebraic number from a given numerical enclosure *x*.
+The algorithm looks for candidates up to degree *maxdeg* and with
+coefficients up to size *maxbits* (which defaults to the precision of *x*
+if not given). Throws if no suitable algebraic number can be found.
+
+Guessing typically requires high precision to succeed, and it does not make
+much sense to call this function with input precision smaller than
+$O(maxdeg \cdot maxbits)$.
+If this function succeeds, then the output is guaranteed to be contained in
+the enclosure *x*, but failure does not prove that such an algebric
+number with the specified parameters does not exist.
+
+This function does a single iteration with the target parameters. For best
+performance, one should invoke this function repeatedly with successively
+larger parameters when the size of the intended solution is unknown or
+may be much smaller than a worst-case bound.
+"""
 function guess(R::CalciumQQBarField, x::arb, maxdeg::Int, maxbits::Int=0)
    CC = AcbField(precision(parent(x)))
    return guess(R, CC(x), maxdeg, maxbits)

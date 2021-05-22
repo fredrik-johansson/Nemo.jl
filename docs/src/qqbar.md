@@ -25,7 +25,7 @@ not the name of its type.
 ----------------|---------------|--------------------
 Calcium         | `qqbar`       | `CalciumQQBarField`
 
-## Important note on performance
+**Important note on performance**
 
 The default algebraic number type represents algebraic numbers
 in canonical form using minimal polynomials. This works well for representing
@@ -42,8 +42,6 @@ since it provides canonical forms with predictable behavior.
 
 ## Algebraic number functionality
 
-### Examples
-
 ### Constructing algebraic numbers
 
 ```@docs
@@ -51,6 +49,8 @@ rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
 ```
 
 ### Conversions
+
+**Examples**
 
 Integer and rational algebraic numbers can be converted to Nemo
 integer and rational types. Algebraic numbers can be evaluated
@@ -130,5 +130,68 @@ eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
 
 ### Comparing algebraic numbers
 
-### Roots and trigonometric functions
+### Roots of unity and trigonometric functions
+
+**Examples**
+
+```julia
+julia> sinpi(QQBar(7) // 13)
+Root 0.992709 of 4096x^12 - 13312x^10 + 16640x^8 - 9984x^6 + 2912x^4 - 364x^2 + 13
+
+julia> tanpi(atanpi(sqrt(QQBar(2)) + 1))
+Root 2.41421 of x^2 - 2x - 1
+
+julia> root_of_unity(QQBar, 5)
+Root 0.309017 + 0.951057*I of x^4 + x^3 + x^2 + x + 1
+
+julia> root_of_unity(QQBar, 5, 4)
+Root 0.309017 - 0.951057*I of x^4 + x^3 + x^2 + x + 1
+
+julia> w = (1 - sqrt(QQBar(-3)))//2
+Root 0.500000 - 0.866025*I of x^2 - x + 1
+
+julia> is_root_of_unity(w)
+true
+
+julia> is_root_of_unity(w + 1)
+false
+
+julia> root_of_unity_as_args(w)
+(6, 5)
+```
+
+**Interface**
+
+```@docs
+root_of_unity(C::CalciumQQBarField, n::Int)
+root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
+is_root_of_unity(a::qqbar)
+root_of_unity_as_args(a::qqbar)
+exp_pi_i(a::qqbar)
+log_pi_i(a::qqbar)
+sinpi(a::qqbar)
+cospi(a::qqbar)
+tanpi(a::qqbar)
+asinpi(a::qqbar)
+acospi(a::qqbar)
+atanpi(a::qqbar)
+```
+
+### Guessing
+
+**Examples**
+
+An algebraic number can be recovered from a numerical value:
+
+```julia
+julia> RR = ArbField(53); guess(QQBar, RR("1.41421356 +/- 1e-6"), 2)
+Root 1.41421 of x^2 - 2
+```
+
+**Interface**
+
+```@docs
+guess(R::CalciumQQBarField, x::arb, maxdeg::Int, maxbits::Int=0)
+guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
+```
 
