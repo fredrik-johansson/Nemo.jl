@@ -14,6 +14,7 @@
    @test isa(R(2), qqbar)
    @test isa(R(fmpz(2)), qqbar)
    @test isa(R(fmpq(2)), qqbar)
+   @test isa(R(qqbar(2)), qqbar)
 
    @test isa(qqbar(), qqbar)
    @test isa(qqbar(2), qqbar)
@@ -25,9 +26,13 @@ end
 @testset "qqbar.printing" begin
    a = CalciumQQBar(1)
 
-   @test string(a) == "1.00000 (deg 1)"
+   @test string(a) == "Root 1.00000 of x - 1"
    @test string(parent(a)) == "Field of Algebraic Numbers in minimal polynomial representation"
    @test needs_parentheses(a) == true
+
+   @test string(-(qqbar(10) ^ 20)) == "Root -1.00000e+20 of x + 100000000000000000000"
+   @test string(root_of_unity(CalciumQQBar, 3)) == "Root -0.500000 + 0.866025*I of x^2 + x + 1"
+   @test string(sqrt(qqbar(-1)) // 3) == "Root 0.333333*I of 9x^2 + 1"
 end
 
 
@@ -96,6 +101,8 @@ end
    @test atanpi(sqrt(qqbar(3))) == qqbar(1)//3
    @test asinpi(sqrt(qqbar(2))//2) == qqbar(1)//4
    @test acospi(sqrt(qqbar(3))//2) == qqbar(1)//6
+
+   @test exp_pi_i(qqbar(1)//2) == i
    @test log_pi_i(i) == qqbar(1)//2
 
    @test_throws DomainError atanpi(qqbar(2))

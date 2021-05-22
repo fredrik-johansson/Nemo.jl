@@ -82,13 +82,50 @@ canonical_unit(a::qqbar) = a
 # function expressify(a::qqbar; context = nothing)::Any
 # end
 
+#=
+function qqbar_vec(n::Int)
+   return ccall((:_qqbar_vec_init, libcalcium), Ptr{qqbar_struct}, (Int,), n)
+end
+
+function array(R::CalciumQQBarField, v::Ptr{qqbar_struct}, n::Int)
+   r = Vector{qqbar}(undef, n)
+   for i=1:n
+       r[i] = R()
+       ccall((:qqbar_set, libcalcium), Nothing, (Ref{qqbar}, Ptr{qqbar_struct}),
+           r[i], v + (i-1)*sizeof(qqbar_struct))
+   end
+   return r
+end
+
+function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
+   ccall((:_qqbar_vec_clear, libcalcium), Nothing, (Ptr{qqbar_struct}, Int), v, n)
+end
+
+function roots(f::fmpz_poly, R::CalciumQQBarField)
+   deg = degree(f)
+   if deg <= 0
+      return Array{qqbar}(undef, 0)
+   end
+   roots = qqbar_vec(deg)
+   ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
+   res = array(R, roots, deg)
+   qqbar_vec_clear(roots, deg)
+   return res
+end
+=#
+
 function native_string(x::qqbar)
-   cstr = ccall((:qqbar_get_str_nd, libcalcium), Ptr{UInt8},
-                (Ref{qqbar}, Int), x, Int(6))
-   res = unsafe_string(cstr)
-   ccall((:flint_free, libflint), Nothing,
-         (Ptr{UInt8},),
-         cstr)
+   cstr = ccall((:qqbar_get_str_nd, libcalcium), Ptr{UInt8}, (Ref{qqbar}, Int), x, Int(6))
+   number = unsafe_string(cstr)
+   ccall((:flint_free, libflint), Nothing, (Ptr{UInt8},), cstr)
+
+   number = number[1:first(findfirst(" (", number))-1]
+
+   R, Rx = PolynomialRing(ZZ, "x")
+   polynomial = string(minpoly(R, x))
+   polynomial = replace(polynomial, "*" => "")
+   res = string("Root ", number, " of ", polynomial)
+
    return res
 end
 

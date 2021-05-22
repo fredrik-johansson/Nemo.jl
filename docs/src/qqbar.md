@@ -41,11 +41,12 @@ julia> R, x = PolynomialRing(QQ, "x")
 julia> v = roots(x^5-x-1, CalciumQQBar)
 5-element Array{qqbar,1}:
 
-1.16730 (deg 5)
- 0.181232 + 1.08395*I (deg 5)
- 0.181232 - 1.08395*I (deg 5)
- -0.764884 + 0.352472*I (deg 5)
- -0.764884 - 0.352472*I (deg 5)
+5-element Array{qqbar,1}:
+ Root 1.16730 of x^5 - x - 1
+ Root 0.181232 + 1.08395*I of x^5 - x - 1
+ Root 0.181232 - 1.08395*I of x^5 - x - 1
+ Root -0.764884 + 0.352472*I of x^5 - x - 1
+ Root -0.764884 - 0.352472*I of x^5 - x - 1
 
 julia> v[1]^5 - v[1] - 1 == 0
 true

@@ -30,6 +30,11 @@ mutable struct qqbar_struct
   imag_rad_man::UInt
 end
 
+mutable struct fexpr_struct
+  data::Ptr{Nothing}
+  alloc::Int
+end
+
 ################################################################################
 #
 #  Types and memory management for QQBarField
