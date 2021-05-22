@@ -51,6 +51,14 @@ function qqbar(a::Int)
   return z
 end
 
+function qqbar(a::Complex{Int})
+   r = qqbar(real(a))
+   s = qqbar(imag(a))
+   z = qqbar()
+   ccall((:qqbar_set_re_im, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, r, s)
+  return z
+end
+
 function qqbar(a::fmpz)
    z = qqbar()
    ccall((:qqbar_set_fmpz, libcalcium), Nothing, (Ref{qqbar}, Ref{fmpz}, ), z, a)
@@ -867,6 +875,8 @@ end
 (a::CalciumQQBarField)() = qqbar()
 
 (a::CalciumQQBarField)(b::Int) = qqbar(b)
+
+(a::CalciumQQBarField)(b::Complex{Int}) = qqbar(b)
 
 (a::CalciumQQBarField)(b::fmpz) = qqbar(b)
 

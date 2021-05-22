@@ -12,12 +12,14 @@
 
    @test isa(R(), qqbar)
    @test isa(R(2), qqbar)
+   @test isa(R(2+3im), qqbar)
    @test isa(R(fmpz(2)), qqbar)
    @test isa(R(fmpq(2)), qqbar)
    @test isa(R(qqbar(2)), qqbar)
 
    @test isa(qqbar(), qqbar)
    @test isa(qqbar(2), qqbar)
+   @test isa(qqbar(2+3im), qqbar)
    @test isa(qqbar(fmpz(2)), qqbar)
    @test isa(qqbar(fmpq(2)), qqbar)
 
@@ -52,6 +54,9 @@ end
 
    u = sqrt(R(2))
    i = sqrt(R(-1))
+
+   @test i == R(0+1im)
+   @test 3+4*i == R(3+4im)
 
    @test canonical_unit(u) == u
    @test hash(u) != hash(i)
