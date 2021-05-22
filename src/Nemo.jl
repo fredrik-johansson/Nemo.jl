@@ -84,6 +84,8 @@ export iswindows64
 
 export ComplexField, PadicField, QadicField
 
+export QQBar
+
 # Things/constants which are also defined in AbstractAlgebra:
 export ZZ, QQ, RealField, FiniteField, NumberField
 
@@ -505,6 +507,15 @@ const FiniteField = FlintFiniteField
 
 const RealField = ArbField
 const ComplexField = AcbField
+
+###############################################################################
+#
+#   Set domain for QQBar to Calcium
+#
+###############################################################################
+
+const QQBar = CalciumQQBar
+
 
 ###############################################################################
 #

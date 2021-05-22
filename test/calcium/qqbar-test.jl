@@ -1,6 +1,8 @@
 @testset "qqbar.constructors" begin
    R = CalciumQQBar
 
+   @test R == QQBar
+
    @test elem_type(R) == qqbar
    @test elem_type(CalciumQQBarField) == qqbar
    @test parent_type(qqbar) == CalciumQQBarField
