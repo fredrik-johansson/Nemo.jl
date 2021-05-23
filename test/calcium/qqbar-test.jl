@@ -289,6 +289,8 @@ end
       # @test !isreal(x)
    end
 
+   @test_throws ErrorException rand(CalciumQQBar, degree=2, bits=5, randtype=:gollum)
+
 end
 
 
