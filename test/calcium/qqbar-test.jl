@@ -91,10 +91,6 @@ end
    @test (u >> 3) == u // 8
    @test (u << 3) == 8 * u
 
-   @test u < 2
-   @test u > 1
-   @test_throws DomainError (i > 1)
-
    ZZx, x = PolynomialRing(FlintZZ, "x")
    QQy, y = PolynomialRing(FlintQQ, "x")
 
@@ -224,6 +220,55 @@ end
    @test fmpq(2) < qqbar(3)
 
 end
+
+@testset "qqbar.comparison" begin
+   R = CalciumQQBar
+
+   u = R(3) // 2
+   i = sqrt(R(-1))
+
+   @test u < 2
+   @test u > 1
+   @test_throws DomainError (i > 1)
+
+   @test isequal_abs(u, -u)
+   @test !isequal_abs(u, 1+u)
+
+   @test isequal_real(u, u+i)
+   @test !isequal_real(u, -u+i)
+
+   @test isequal_imag(i, 1+i)
+   @test !isequal_imag(i, 1-i)
+
+   @test isequal_abs_real(u, -u+i)
+   @test !isequal_abs_real(u, 1+u+i)
+
+   @test isequal_abs_imag(i, 1-i)
+   @test !isequal_abs_imag(i, 1-2*i)
+
+   @test isless_real(u, 1+u+i)
+   @test !isless_real(u, u+i)
+
+   @test isless_imag(i, 2*i)
+   @test !isless_imag(i, i)
+
+   @test isless_abs(u, -2*u)
+   @test isless_abs(u, 2*u)
+   @test !isless_abs(u, -u)
+
+   @test isless_abs_real(-u, -2*u)
+   @test isless_abs_real(-u, 2*u)
+   @test !isless_abs_real(-u, u)
+
+   @test isless_abs_imag(-u, -2*i)
+   @test isless_abs_imag(-u, 2*i)
+   @test !isless_abs_imag(-u, u)
+
+   @test isless_root_order(u, i)
+   @test isless_root_order(i, -i)
+
+end
+
 
 @testset "qqbar.rand" begin
    R = CalciumQQBar

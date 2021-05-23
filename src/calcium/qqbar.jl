@@ -9,6 +9,9 @@ export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2,
        conjugates, eigenvalues, guess, root_of_unity_as_args, is_root_of_unity,
        log_pi_i, rand
 
+export isequal_real, isequal_imag, isequal_abs, isequal_abs_real, isequal_abs_imag, isequal_root_order
+export isless_real, isless_imag, isless_abs, isless_abs_real, isless_abs_imag, isless_root_order
+
 ###############################################################################
 #
 #   Data type and parent methods
@@ -553,10 +556,7 @@ function cmp(a::qqbar, b::qqbar)
                 (Ref{qqbar}, Ref{qqbar}), a, b)
 end
 
-function isless(a::qqbar, b::qqbar)
-    return cmp(a, b) < 0
-end
-
+isless(a::qqbar, b::qqbar) = cmp(a, b) < 0
 isless(a::qqbar, b::fmpz) = isless(a, qqbar(b))
 isless(a::qqbar, b::fmpq) = isless(a, qqbar(b))
 isless(a::qqbar, b::Int) = isless(a, qqbar(b))
@@ -564,36 +564,92 @@ isless(a::fmpq, b::qqbar) = isless(qqbar(a), b)
 isless(a::fmpz, b::qqbar) = isless(qqbar(a), b)
 isless(a::Int, b::qqbar) = isless(qqbar(a), b)
 
-# todo: name and export the following functions?
+# todo: export the cmp functions?
+cmp_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_re, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmp_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_im, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_re, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_im, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmp_root_order(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_root_order, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
 
-function cmp_real(a::qqbar, b::qqbar)
-   return ccall((:qqbar_cmp_re, libcalcium), Cint,
-                (Ref{qqbar}, Ref{qqbar}), a, b)
-end
+@doc Markdown.doc"""
+    isequal_real(a::qqbar, b::qqbar)
 
-function cmp_imag(a::qqbar, b::qqbar)
-   return ccall((:qqbar_cmp_im, libcalcium), Cint,
-                (Ref{qqbar}, Ref{qqbar}), a, b)
-end
+Compares the real parts of *a* and *b*.
+"""
+isequal_real(a::qqbar, b::qqbar) = cmp_real(a, b) == 0
 
-function cmpabs_real(a::qqbar, b::qqbar)
-   return ccall((:qqbar_cmpabs_re, libcalcium), Cint,
-                (Ref{qqbar}, Ref{qqbar}), a, b)
-end
+@doc Markdown.doc"""
+    isequal_imag(a::qqbar, b::qqbar)
 
-function cmpabs_imag(a::qqbar, b::qqbar)
-   return ccall((:qqbar_cmpabs_im, libcalcium), Cint,
-                (Ref{qqbar}, Ref{qqbar}), a, b)
-end
+Compares the imaginary parts of *a* and *b*.
+"""
+isequal_imag(a::qqbar, b::qqbar) = cmp_imag(a, b) == 0
 
-function cmp_root_order(a::qqbar, b::qqbar)
-   return ccall((:qqbar_cmp_root_order, libcalcium), Cint,
-                (Ref{qqbar}, Ref{qqbar}), a, b)
-end
+@doc Markdown.doc"""
+    isequal_abs(a::qqbar, b::qqbar)
 
-function isless_root_order(a::qqbar, b::qqbar)
-    return cmp_root_order(a, b) < 0
-end
+Compares the absolute values of *a* and *b*.
+"""
+isequal_abs(a::qqbar, b::qqbar) = cmpabs(a, b) == 0
+
+@doc Markdown.doc"""
+    isequal_abs_real(a::qqbar, b::qqbar)
+
+Compares the absolute values of the real parts of *a* and *b*.
+"""
+isequal_abs_real(a::qqbar, b::qqbar) = cmpabs_real(a, b) == 0
+
+@doc Markdown.doc"""
+    isequal_abs_imag(a::qqbar, b::qqbar)
+
+Compares the absolute values of the imaginary parts of *a* and *b*.
+"""
+isequal_abs_imag(a::qqbar, b::qqbar) = cmpabs_imag(a, b) == 0
+
+
+@doc Markdown.doc"""
+    isless_real(a::qqbar, b::qqbar)
+
+Compares the real parts of *a* and *b*.
+"""
+isless_real(a::qqbar, b::qqbar) = cmp_real(a, b) < 0
+
+@doc Markdown.doc"""
+    isless_imag(a::qqbar, b::qqbar)
+
+Compares the imaginary parts of *a* and *b*.
+"""
+isless_imag(a::qqbar, b::qqbar) = cmp_imag(a, b) < 0
+
+@doc Markdown.doc"""
+    isless_abs(a::qqbar, b::qqbar)
+
+Compares the absolute values of *a* and *b*.
+"""
+isless_abs(a::qqbar, b::qqbar) = cmpabs(a, b) < 0
+
+
+@doc Markdown.doc"""
+    isless_abs_real(a::qqbar, b::qqbar)
+
+Compares the absolute values of the real parts of *a* and *b*.
+"""
+isless_abs_real(a::qqbar, b::qqbar) = cmpabs_real(a, b) < 0
+
+@doc Markdown.doc"""
+    isless_abs_imag(a::qqbar, b::qqbar)
+
+Compares the absolute values of the imaginary parts of *a* and *b*.
+"""
+isless_abs_imag(a::qqbar, b::qqbar) = cmpabs_imag(a, b) < 0
+
+@doc Markdown.doc"""
+    isless_root_order(a::qqbar, b::qqbar)
+
+Compares the *a* and *b* in root sort order.
+"""
+isless_root_order(a::qqbar, b::qqbar) = cmp_root_order(a, b) < 0
 
 # todo: wrap qqbar_equal_fmpq_poly_val
 

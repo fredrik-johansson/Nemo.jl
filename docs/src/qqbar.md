@@ -158,7 +158,70 @@ height(x::qqbar)
 height_bits(x::qqbar)
 ```
 
+### Complex parts
+
 ### Comparing algebraic numbers
+
+The operators `==` and `!=` check exactly for equality.
+
+We provide various comparison functions for ordering algebraic numbers:
+
+* Standard comparison for real numbers (`<`, `isless`)
+* Real parts
+* Imaginary parts
+* Absolute values
+* Absolute values of real or imaginary parts
+* Root sort order 
+
+The standard comparison will throw if either argument is nonreal.
+
+The various comparisons for complex parts are provided as separate operations
+since these functions are far more efficient than explicitly computing the
+complex parts and then doing real comparisons.
+
+The root sort order is a total order for complex algebraic numbers
+used to order the output of `roots` and `conjugates` canonically.
+We define this order as follows: real roots come first, in descending order.
+Nonreal roots are subsequently ordered first by real part in descending order,
+then in ascending order by the absolute value of the imaginary part, and then
+in descending order of the sign of the imaginary part. This implies that
+complex conjugate roots are adjacent, with the root in the upper half plane
+first.
+
+**Examples**
+
+```julia
+julia> 1 < sqrt(QQBar(2)) < QQBar(3)//2
+true
+
+julia> x = QQBar(3+4im)
+Root 3.00000 + 4.00000*I of x^2 - 6x + 25
+
+julia> isequal_abs(x, -x)
+true
+
+julia> isequal_abs_imag(x, 2-x)
+true
+
+julia> isless_real(x, x // 2)
+false
+```
+
+**Interface**
+
+```@docs
+isequal_real(a::qqbar, b::qqbar)
+isequal_imag(a::qqbar, b::qqbar)
+isequal_abs(a::qqbar, b::qqbar)
+isequal_abs_real(a::qqbar, b::qqbar)
+isequal_abs_imag(a::qqbar, b::qqbar)
+isless_real(a::qqbar, b::qqbar)
+isless_imag(a::qqbar, b::qqbar)
+isless_abs(a::qqbar, b::qqbar)
+isless_abs_real(a::qqbar, b::qqbar)
+isless_abs_imag(a::qqbar, b::qqbar)
+isless_root_order(a::qqbar, b::qqbar)
+```
 
 ### Roots of unity and trigonometric functions
 
@@ -216,6 +279,23 @@ An algebraic number can be recovered from a numerical value:
 ```julia
 julia> RR = ArbField(53); guess(QQBar, RR("1.41421356 +/- 1e-6"), 2)
 Root 1.41421 of x^2 - 2
+```
+
+Warning: the input should be an enclosure. If you have a floating-point
+approximation, you should add an error estimate; otherwise, the only
+algebraic number that can be guessed is the binary floating-point number
+itself.
+
+```julia
+julia> RR = ArbField(128);
+
+julia> x = RR(0.1);       # note: 53-bit binary approximation of 1//10 without radius
+
+julia> guess(QQBar, x, 1)
+Root 0.100000 of 36028797018963968x - 3602879701896397
+
+julia> guess(QQBar, x + RR("+/- 1e-10"), 1)
+Root 0.100000 of 10x - 1
 ```
 
 **Interface**
