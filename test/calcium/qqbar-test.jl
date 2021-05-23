@@ -70,6 +70,11 @@ end
    @test !isreal(i)
    @test is_algebraic_integer(u)
 
+   @test denominator(qqbar(3+4im) // 5) == 5
+   @test numerator(qqbar(3+4im) // 5) == qqbar(3+4im)
+   @test height(qqbar(1+10im)) == 101
+   @test height_bits(qqbar(1+10im)) == 7
+
    @test abs(-u) == u
    @test abs2(u) == 2
    @test u != i

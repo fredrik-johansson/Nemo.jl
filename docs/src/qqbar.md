@@ -44,18 +44,18 @@ since it provides canonical forms with predictable behavior.
 
 ### Constructing algebraic numbers
 
-```@docs
-rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
-```
+Methods to construct algebraic numbers include:
 
-### Conversions
+* Conversion from other numbers and through arithmetic operations
+* Computing the roots of a given polynomial
+* Computing the eigenvalues of a given matrix
+* Random generation
+* Exact trigonometric functions (see later section)
+* Guessing (see later section)
 
 **Examples**
 
-Integer and rational algebraic numbers can be converted to Nemo
-integer and rational types. Algebraic numbers can be evaluated
-numerically to arbitrary precision by converting
-to real or complex Arb fields:
+Arithmetic:
 
 ```julia
 julia> fmpz(QQBar(3))
@@ -64,16 +64,9 @@ julia> fmpz(QQBar(3))
 julia> fmpq(QQBar(3) // 2)
 3//2
 
-julia> RR = ArbField(64); RR(sqrt(QQBar(2)))
-[1.414213562373095049 +/- 3.45e-19]
-
-julia> CC = AcbField(32); CC(QQBar(-1) ^ (QQBar(1) // 4))
-[0.707106781 +/- 2.74e-10] + [0.707106781 +/- 2.74e-10]*im
+julia> QQBar(-1) ^ (QQBar(1) // 3)
+Root 0.500000 + 0.866025*I of x^2 - x + 1
 ```
-
-### Minimal polynomials and conjugates
-
-**Examples**
 
 Solving the quintic equation:
 
@@ -103,6 +96,36 @@ julia> eigenvalues(ZZ[1 1 0; 0 1 1; 1 0 1], QQBar)
  Root 0.500000 - 0.866025*I of x^2 - x + 1
 ```
 
+**Interface**
+
+```@docs
+roots(f::fmpz_poly, R::CalciumQQBarField)
+roots(f::fmpq_poly, R::CalciumQQBarField)
+eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
+eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
+rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
+```
+
+### Numerical evaluation
+
+**Examples**
+
+Algebraic numbers can be evaluated
+numerically to arbitrary precision by converting
+to real or complex Arb fields:
+
+```julia
+julia> RR = ArbField(64); RR(sqrt(QQBar(2)))
+[1.414213562373095049 +/- 3.45e-19]
+
+julia> CC = AcbField(32); CC(QQBar(-1) ^ (QQBar(1) // 4))
+[0.707106781 +/- 2.74e-10] + [0.707106781 +/- 2.74e-10]*im
+```
+
+### Minimal polynomials, conjugates, and properties
+
+**Examples**
+
 Retrieving the minimal polynomial and algebraic conjugates
 of a given algebraic number:
 
@@ -119,13 +142,20 @@ julia> conjugates(QQBar(1+2im))
 **Interface**
 
 ```@docs
+iszero(x::qqbar)
+isone(x::qqbar)
+isinteger(x::qqbar)
+isrational(x::qqbar)
+isreal(x::qqbar)
+degree(x::qqbar)
+is_algebraic_integer(x::qqbar)
 minpoly(R::FmpzPolyRing, x::qqbar)
 minpoly(R::FmpqPolyRing, x::qqbar)
-roots(f::fmpz_poly, R::CalciumQQBarField)
-roots(f::fmpq_poly, R::CalciumQQBarField)
 conjugates(a::qqbar)
-eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
-eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
+denominator(x::qqbar)
+numerator(x::qqbar)
+height(x::qqbar)
+height_bits(x::qqbar)
 ```
 
 ### Comparing algebraic numbers

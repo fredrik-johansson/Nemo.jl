@@ -167,7 +167,7 @@ function degree(x::qqbar)
 end
 
 @doc Markdown.doc"""
-    isrational(x::qqbar)
+    iszero(x::qqbar)
 
 Return whether *x* is the number 0.
 """
@@ -176,7 +176,7 @@ function iszero(x::qqbar)
 end
 
 @doc Markdown.doc"""
-    isrational(x::qqbar)
+    isone(x::qqbar)
 
 Return whether *x* is the number 1.
 """
@@ -185,7 +185,7 @@ function isone(x::qqbar)
 end
 
 @doc Markdown.doc"""
-    isrational(x::qqbar)
+    isinteger(x::qqbar)
 
 Return whether *x* is an integer.
 """
@@ -241,6 +241,51 @@ function minpoly(R::FmpqPolyRing, x::qqbar)
    ccall((:fmpq_poly_set_fmpz_poly, libflint), Nothing, (Ref{fmpq_poly}, Ref{qqbar}, ), z, x)
    return z
 end
+
+@doc Markdown.doc"""
+    denominator(x::qqbar)
+
+Return the denominator of *x*, defined as the leading coefficient of the
+minimal polynomial of *x*. The result is returned as an *fmpz*.
+"""
+function denominator(x::qqbar)
+   d = degree(x)
+   q = fmpz()
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, x, d)
+   return q
+end
+
+@doc Markdown.doc"""
+    numerator(x::qqbar)
+
+Return the numerator of *x*, defined as *x* multiplied by its denominator.
+The result is an algebraic integer.
+"""
+function numerator(x::qqbar)
+   return x * denominator(x)
+end
+
+@doc Markdown.doc"""
+    height(x::qqbar)
+
+Return the height of the algebraic number *x*. The result is an *fmpz* integer.
+"""
+function height(x::qqbar)
+   z = fmpz()
+   ccall((:qqbar_height, libcalcium), Nothing, (Ref{fmpz}, Ref{qqbar}, ), z, x)
+   return z
+end
+
+@doc Markdown.doc"""
+    height_bits(x::qqbar)
+
+Return the height of the algebraic number *x* measured in bits.
+The result is a Julia integer.
+"""
+function height_bits(x::qqbar)
+   return ccall((:qqbar_height_bits, libcalcium), Int, (Ref{qqbar}, ), x)
+end
+
 
 ###############################################################################
 #
@@ -1007,7 +1052,6 @@ end
 #   Conversions
 #
 ###############################################################################
-
 
 @doc Markdown.doc"""
     (R::ArbField)(a::qqbar)
