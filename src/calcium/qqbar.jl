@@ -131,6 +131,7 @@ function native_string(x::qqbar)
    ccall((:flint_free, libflint), Nothing, (Ptr{UInt8},), cstr)
 
    number = number[1:first(findfirst(" (", number))-1]
+   number = replace(number, "I" => "im")
 
    R, Rx = PolynomialRing(ZZ, "x")
    polynomial = string(minpoly(R, x))
@@ -659,60 +660,122 @@ isless_root_order(a::qqbar, b::qqbar) = cmp_root_order(a, b) < 0
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    real(a::qqbar)
+
+Return the real part of *a*.
+"""
 function real(a::qqbar)
    z = qqbar()
    ccall((:qqbar_re, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    imag(a::qqbar)
+
+Return the imaginary part of *a*.
+"""
 function imag(a::qqbar)
    z = qqbar()
    ccall((:qqbar_im, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    abs(a::qqbar)
+
+Return the absolute value of *a*.
+"""
 function abs(a::qqbar)
    z = qqbar()
    ccall((:qqbar_abs, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    conj(a::qqbar)
+
+Return the complex conjugate of *a*.
+"""
 function conj(a::qqbar)
    z = qqbar()
    ccall((:qqbar_conj, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    abs2(a::qqbar)
+
+Return the squared absolute value of *a*.
+"""
 function abs2(a::qqbar)
    z = qqbar()
    ccall((:qqbar_abs2, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    sign(a::qqbar)
+
+Return the complex sign of *a*, defined as zero if *a* is zero
+and as $a / |a|$ otherwise.
+"""
 function sign(a::qqbar)
    z = qqbar()
    ccall((:qqbar_sgn, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    csgn(a::qqbar)
+
+Return the extension of the real sign function taking the value 1
+strictly in the right half plane, -1 strictly in the left half plane,
+and the sign of the imaginary part when on the imaginary axis.
+Equivalently, $\csgn(x) = x / \sqrt{x^2}$ except that the value is 0
+at zero. The value is returned as a Julia integer.
+"""
 function csgn(a::qqbar)
    return qqbar(Int(ccall((:qqbar_csgn, libcalcium), Cint, (Ref{qqbar}, ), a)))
 end
 
+@doc Markdown.doc"""
+    sign_real(a::qqbar)
+
+Return the sign of the real part of *a* as a Julia integer.
+"""
 function sign_real(a::qqbar)
    return qqbar(Int(ccall((:qqbar_sgn_re, libcalcium), Cint, (Ref{qqbar}, ), a)))
 end
 
+@doc Markdown.doc"""
+    sign_imag(a::qqbar)
+
+Return the sign of the imaginary part of *a* as a Julia integer.
+"""
 function sign_imag(a::qqbar)
    return qqbar(Int(ccall((:qqbar_sgn_im, libcalcium), Cint, (Ref{qqbar}, ), a)))
 end
 
+@doc Markdown.doc"""
+    floor(a::qqbar)
+
+Return the floor function of *a* as an algebraic number. Use `fmpz(floor(a))`
+to construct a Nemo integer instead.
+"""
 function floor(a::qqbar)
    z = fmpz()
    ccall((:qqbar_floor, libcalcium), Nothing, (Ref{fmpz}, Ref{qqbar}, ), z, a)
    return qqbar(z)
 end
 
+@doc Markdown.doc"""
+    ceil(a::qqbar)
+
+Return the ceiling function of *b* as an algebraic number. Use `fmpz(ceil(a))`
+to construct a Nemo integer instead.
+"""
 function ceil(a::qqbar)
    z = fmpz()
    ccall((:qqbar_ceil, libcalcium), Nothing, (Ref{fmpz}, Ref{qqbar}, ), z, a)
@@ -726,12 +789,22 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    sqrt(a::qqbar)
+
+Return the principal square root of *a*.
+"""
 function sqrt(a::qqbar)
    z = qqbar()
    ccall((:qqbar_sqrt, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
+@doc Markdown.doc"""
+    root(a::qqbar, n::Int)
+
+Return the principal *n*-th root of *a*. Requires positive *n*.
+"""
 function root(a::qqbar, n::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()

@@ -6,7 +6,7 @@ makedocs(
          modules = [Nemo, AbstractAlgebra],
          clean = true,
          checkdocs = :none,
-         doctest = false,
+         doctest = true,
          strict = true,
          pages    = [
              "index.md",
@@ -21,7 +21,7 @@ makedocs(
                           "residue.md" ],
              "Fields" => [ "fraction.md",
                            "rational.md",
-                           "qqbar.md",
+                           "algebraic.md",
                            "arb.md",
                            "acb.md",
                            "gfp.md",

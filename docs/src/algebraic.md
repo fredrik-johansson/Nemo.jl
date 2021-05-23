@@ -65,7 +65,7 @@ julia> fmpq(QQBar(3) // 2)
 3//2
 
 julia> QQBar(-1) ^ (QQBar(1) // 3)
-Root 0.500000 + 0.866025*I of x^2 - x + 1
+Root 0.500000 + 0.866025*im of x^2 - x + 1
 ```
 
 Solving the quintic equation:
@@ -77,10 +77,10 @@ julia> R, x = PolynomialRing(QQ, "x")
 julia> v = roots(x^5-x-1, QQBar)
 5-element Array{qqbar,1}:
  Root 1.16730 of x^5 - x - 1
- Root 0.181232 + 1.08395*I of x^5 - x - 1
- Root 0.181232 - 1.08395*I of x^5 - x - 1
- Root -0.764884 + 0.352472*I of x^5 - x - 1
- Root -0.764884 - 0.352472*I of x^5 - x - 1
+ Root 0.181232 + 1.08395*im of x^5 - x - 1
+ Root 0.181232 - 1.08395*im of x^5 - x - 1
+ Root -0.764884 + 0.352472*im of x^5 - x - 1
+ Root -0.764884 - 0.352472*im of x^5 - x - 1
 
 julia> v[1]^5 - v[1] - 1 == 0
 true
@@ -92,8 +92,8 @@ Computing exact eigenvalues of a matrix:
 julia> eigenvalues(ZZ[1 1 0; 0 1 1; 1 0 1], QQBar)
 3-element Array{qqbar,1}:
  Root 2.00000 of x - 2
- Root 0.500000 + 0.866025*I of x^2 - x + 1
- Root 0.500000 - 0.866025*I of x^2 - x + 1
+ Root 0.500000 + 0.866025*im of x^2 - x + 1
+ Root 0.500000 - 0.866025*im of x^2 - x + 1
 ```
 
 **Interface**
@@ -135,8 +135,8 @@ x^2 - 2*x + 5
 
 julia> conjugates(QQBar(1+2im))
 2-element Array{qqbar,1}:
- Root 1.00000 + 2.00000*I of x^2 - 2x + 5
- Root 1.00000 - 2.00000*I of x^2 - 2x + 5
+ Root 1.00000 + 2.00000*im of x^2 - 2x + 5
+ Root 1.00000 - 2.00000*im of x^2 - 2x + 5
 ```
 
 **Interface**
@@ -159,6 +159,38 @@ height_bits(x::qqbar)
 ```
 
 ### Complex parts
+
+**Examples**
+
+```julia
+julia> real(sqrt(QQBar(1im)))
+Root 0.707107 of 2x^2 - 1
+
+julia> abs(sqrt(QQBar(1im)))
+Root 1.00000 of x - 1
+
+julia> floor(sqrt(QQBar(1000)))
+Root 31.0000 of x - 31
+
+julia> sign(QQBar(-10-20im))
+Root -0.447214 - 0.894427*im of 5x^4 + 6x^2 + 5
+```
+
+**Interface**
+
+```@docs
+real(a::qqbar)
+imag(a::qqbar)
+abs(a::qqbar)
+abs2(a::qqbar)
+conj(a::qqbar)
+sign(a::qqbar)
+csgn(a::qqbar)
+sign_real(a::qqbar)
+sign_imag(a::qqbar)
+floor(a::qqbar)
+ceil(a::qqbar)
+```
 
 ### Comparing algebraic numbers
 
@@ -195,7 +227,7 @@ julia> 1 < sqrt(QQBar(2)) < QQBar(3)//2
 true
 
 julia> x = QQBar(3+4im)
-Root 3.00000 + 4.00000*I of x^2 - 6x + 25
+Root 3.00000 + 4.00000*im of x^2 - 6x + 25
 
 julia> isequal_abs(x, -x)
 true
@@ -223,11 +255,14 @@ isless_abs_imag(a::qqbar, b::qqbar)
 isless_root_order(a::qqbar, b::qqbar)
 ```
 
-### Roots of unity and trigonometric functions
+### Roots and trigonometric functions
 
 **Examples**
 
 ```julia
+julia> root(QQBar(2), 5)
+Root 1.14870 of x^5 - 2
+
 julia> sinpi(QQBar(7) // 13)
 Root 0.992709 of 4096x^12 - 13312x^10 + 16640x^8 - 9984x^6 + 2912x^4 - 364x^2 + 13
 
@@ -235,13 +270,13 @@ julia> tanpi(atanpi(sqrt(QQBar(2)) + 1))
 Root 2.41421 of x^2 - 2x - 1
 
 julia> root_of_unity(QQBar, 5)
-Root 0.309017 + 0.951057*I of x^4 + x^3 + x^2 + x + 1
+Root 0.309017 + 0.951057*im of x^4 + x^3 + x^2 + x + 1
 
 julia> root_of_unity(QQBar, 5, 4)
-Root 0.309017 - 0.951057*I of x^4 + x^3 + x^2 + x + 1
+Root 0.309017 - 0.951057*im of x^4 + x^3 + x^2 + x + 1
 
 julia> w = (1 - sqrt(QQBar(-3)))//2
-Root 0.500000 - 0.866025*I of x^2 - x + 1
+Root 0.500000 - 0.866025*im of x^2 - x + 1
 
 julia> is_root_of_unity(w)
 true
@@ -256,6 +291,8 @@ julia> root_of_unity_as_args(w)
 **Interface**
 
 ```@docs
+sqrt(a::qqbar)
+root(a::qqbar, n::Int)
 root_of_unity(C::CalciumQQBarField, n::Int)
 root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
 is_root_of_unity(a::qqbar)

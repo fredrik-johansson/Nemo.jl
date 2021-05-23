@@ -35,8 +35,8 @@ end
    @test needs_parentheses(a) == true
 
    @test string(-(qqbar(10) ^ 20)) == "Root -1.00000e+20 of x + 100000000000000000000"
-   @test string(root_of_unity(CalciumQQBar, 3)) == "Root -0.500000 + 0.866025*I of x^2 + x + 1"
-   @test string(sqrt(qqbar(-1)) // 3) == "Root 0.333333*I of 9x^2 + 1"
+   @test string(root_of_unity(CalciumQQBar, 3)) == "Root -0.500000 + 0.866025*im of x^2 + x + 1"
+   @test string(sqrt(qqbar(-1)) // 3) == "Root 0.333333*im of 9x^2 + 1"
 end
 
 
