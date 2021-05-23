@@ -41,6 +41,17 @@ end
 
    @test Float64(RR(0.5)) == 0.5
    @test convert(Float64, RR(0.5)) == 0.5
+
+   a = 123
+   b = -8162
+   c = 0.12
+   @test fmpz(RR(a)) == a
+   @test_throws ErrorException fmpz(RR(c))
+   @test BigInt(RR(a)) == a
+   @test_throws ErrorException BigInt(RR(c))
+   @test Int(RR(a)) == a
+   @test_throws ErrorException Int(RR(c))
+
    @test abs(Float64(RR("2.3")) - 2.3) < 1e-10
    @test characteristic(RR) == 0
 end
@@ -271,6 +282,17 @@ end
 @testset "arb.functions" begin
    @test floor(RR(2.5)) == 2
    @test ceil(RR(2.5)) == 3
+
+   a = 2.3
+   b = 2
+   c = 3
+   @test floor(fmpz, RR(a)) == b
+   @test ceil(fmpz, RR(a)) == c
+   @test floor(fmpz, RR(-a)) == -c
+   @test ceil(fmpz, RR(-a)) == -b
+   @test typeof(floor(fmpz, RR(a))) == fmpz
+   @test typeof(ceil(fmpz, RR(a))) == fmpz
+
    @test sqrt(RR(4)) == 2
    @test rsqrt(RR(4)) == 0.5
    @test sqrt1pm1(RR(15)) == 3
@@ -441,7 +463,7 @@ end
    CC = ComplexField(64)
 
    tau = (1 + sqrt(CC(-23)))/2
-   a = abs(modweber_f2(tau))^2
+   a = abs(modular_weber_f2(tau))^2
    C = lindep([RR(1), a, a^2, a^3, a^4, a^5], 20)
 
    @test C == fmpz[-1, 1, 1, 0, 1, 0]
