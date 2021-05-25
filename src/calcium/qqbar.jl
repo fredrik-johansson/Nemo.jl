@@ -9,8 +9,9 @@ export qqbar, CalciumQQBar, CalciumQQBarField, is_algebraic_integer, rand, abs2,
        conjugates, eigenvalues, guess, root_of_unity_as_args, is_root_of_unity,
        log_pi_i, rand
 
-export isequal_real, isequal_imag, isequal_abs, isequal_abs_real, isequal_abs_imag, isequal_root_order
-export isless_real, isless_imag, isless_abs, isless_abs_real, isless_abs_imag, isless_root_order
+export isequal_real, isequal_imag, isequal_abs, isequal_abs_real,
+       isequal_abs_imag, isequal_root_order, isless_real, isless_imag,
+       isless_abs, isless_abs_real, isless_abs_imag, isless_root_order
 
 ###############################################################################
 #
@@ -58,19 +59,22 @@ function qqbar(a::Complex{Int})
    r = qqbar(real(a))
    s = qqbar(imag(a))
    z = qqbar()
-   ccall((:qqbar_set_re_im, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, r, s)
+   ccall((:qqbar_set_re_im, libcalcium),
+        Nothing, (Ref{qqbar}, Ref{qqbar}, Ref{qqbar}), z, r, s)
   return z
 end
 
 function qqbar(a::fmpz)
    z = qqbar()
-   ccall((:qqbar_set_fmpz, libcalcium), Nothing, (Ref{qqbar}, Ref{fmpz}, ), z, a)
+   ccall((:qqbar_set_fmpz, libcalcium),
+        Nothing, (Ref{qqbar}, Ref{fmpz}, ), z, a)
    return z
 end
 
 function qqbar(a::fmpq)
    z = qqbar()
-   ccall((:qqbar_set_fmpq, libcalcium), Nothing, (Ref{qqbar}, Ref{fmpq}, ), z, a)
+   ccall((:qqbar_set_fmpq, libcalcium),
+        Nothing, (Ref{qqbar}, Ref{fmpq}, ), z, a)
    return z
 end
 
@@ -109,7 +113,8 @@ function array(R::CalciumQQBarField, v::Ptr{qqbar_struct}, n::Int)
 end
 
 function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
-   ccall((:_qqbar_vec_clear, libcalcium), Nothing, (Ptr{qqbar_struct}, Int), v, n)
+   ccall((:_qqbar_vec_clear, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Int), v, n)
 end
 
 function roots(f::fmpz_poly, R::CalciumQQBarField)
@@ -118,7 +123,8 @@ function roots(f::fmpz_poly, R::CalciumQQBarField)
       return Array{qqbar}(undef, 0)
    end
    roots = qqbar_vec(deg)
-   ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
+   ccall((:qqbar_roots_fmpz_poly, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
    res = array(R, roots, deg)
    qqbar_vec_clear(roots, deg)
    return res
@@ -126,7 +132,8 @@ end
 =#
 
 function native_string(x::qqbar)
-   cstr = ccall((:qqbar_get_str_nd, libcalcium), Ptr{UInt8}, (Ref{qqbar}, Int), x, Int(6))
+   cstr = ccall((:qqbar_get_str_nd, libcalcium),
+        Ptr{UInt8}, (Ref{qqbar}, Int), x, Int(6))
    number = unsafe_string(cstr)
    ccall((:flint_free, libflint), Nothing, (Ptr{UInt8},), cstr)
 
@@ -221,7 +228,8 @@ end
 Return whether *x* is an algebraic integer.
 """
 function is_algebraic_integer(x::qqbar)
-   return Bool(ccall((:qqbar_is_algebraic_integer, libcalcium), Cint, (Ref{qqbar},), x))
+   return Bool(ccall((:qqbar_is_algebraic_integer, libcalcium),
+        Cint, (Ref{qqbar},), x))
 end
 
 @doc Markdown.doc"""
@@ -231,7 +239,8 @@ Return the minimal polynomial of $x$ as an element of the polynomial ring $R$.
 """
 function minpoly(R::FmpzPolyRing, x::qqbar)
    z = R()
-   ccall((:fmpz_poly_set, libflint), Nothing, (Ref{fmpz_poly}, Ref{qqbar}, ), z, x)
+   ccall((:fmpz_poly_set, libflint),
+        Nothing, (Ref{fmpz_poly}, Ref{qqbar}, ), z, x)
    return z
 end
 
@@ -242,7 +251,8 @@ Return the minimal polynomial of $x$ as an element of the polynomial ring $R$.
 """
 function minpoly(R::FmpqPolyRing, x::qqbar)
    z = R()
-   ccall((:fmpq_poly_set_fmpz_poly, libflint), Nothing, (Ref{fmpq_poly}, Ref{qqbar}, ), z, x)
+   ccall((:fmpq_poly_set_fmpz_poly, libflint),
+        Nothing, (Ref{fmpq_poly}, Ref{qqbar}, ), z, x)
    return z
 end
 
@@ -255,7 +265,8 @@ minimal polynomial of *x*. The result is returned as an *fmpz*.
 function denominator(x::qqbar)
    d = degree(x)
    q = fmpz()
-   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, x, d)
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint),
+        Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, x, d)
    return q
 end
 
@@ -306,7 +317,8 @@ complex numbers are generated. Set the optional `randtype` to `:real` or
 `:nonreal` to generate a specific type of number. Note that
 nonreal numbers require *degree* at least 2.
 """
-function rand(R::CalciumQQBarField; degree::Int, bits::Int, randtype::Symbol=:null)
+function rand(R::CalciumQQBarField; degree::Int, bits::Int,
+                                            randtype::Symbol=:null)
    state = _flint_rand_states[Threads.threadid()]
    x = R()
 
@@ -538,6 +550,25 @@ function >>(a::qqbar, b::Int)
    return z
 end
 
+###############################################################################
+#
+#   Polynomial evaluation
+#
+###############################################################################
+
+function evaluate(x::fmpq_poly, y::qqbar)
+   z = qqbar()
+   ccall((:qqbar_evaluate_fmpq_poly, libcalcium), Nothing,
+                (Ref{qqbar}, Ref{fmpq_poly}, Ref{qqbar}), z, x, y)
+   return z
+end
+
+function evaluate(x::fmpz_poly, y::qqbar)
+   z = qqbar()
+   ccall((:qqbar_evaluate_fmpz_poly, libcalcium), Nothing,
+                (Ref{qqbar}, Ref{fmpz_poly}, Ref{qqbar}), z, x, y)
+   return z
+end
 
 ###############################################################################
 #
@@ -566,12 +597,18 @@ isless(a::fmpz, b::qqbar) = isless(qqbar(a), b)
 isless(a::Int, b::qqbar) = isless(qqbar(a), b)
 
 # todo: export the cmp functions?
-cmp_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_re, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
-cmp_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_im, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
-cmpabs(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
-cmpabs_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_re, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
-cmpabs_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_im, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
-cmp_root_order(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_root_order, libcalcium), Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmp_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_re, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmp_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_im, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs_real(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_re, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmpabs_imag(a::qqbar, b::qqbar) = ccall((:qqbar_cmpabs_im, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
+cmp_root_order(a::qqbar, b::qqbar) = ccall((:qqbar_cmp_root_order, libcalcium),
+    Cint, (Ref{qqbar}, Ref{qqbar}), a, b)
 
 @doc Markdown.doc"""
     isequal_real(a::qqbar, b::qqbar)
@@ -746,7 +783,8 @@ end
 Return the sign of the real part of *a* as a Julia integer.
 """
 function sign_real(a::qqbar)
-   return qqbar(Int(ccall((:qqbar_sgn_re, libcalcium), Cint, (Ref{qqbar}, ), a)))
+   return qqbar(Int(ccall((:qqbar_sgn_re, libcalcium),
+        Cint, (Ref{qqbar}, ), a)))
 end
 
 @doc Markdown.doc"""
@@ -755,7 +793,8 @@ end
 Return the sign of the imaginary part of *a* as a Julia integer.
 """
 function sign_imag(a::qqbar)
-   return qqbar(Int(ccall((:qqbar_sgn_im, libcalcium), Cint, (Ref{qqbar}, ), a)))
+   return qqbar(Int(ccall((:qqbar_sgn_im, libcalcium),
+        Cint, (Ref{qqbar}, ), a)))
 end
 
 @doc Markdown.doc"""
@@ -796,7 +835,8 @@ Return the principal square root of *a*.
 """
 function sqrt(a::qqbar)
    z = qqbar()
-   ccall((:qqbar_sqrt, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   ccall((:qqbar_sqrt, libcalcium),
+        Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
    return z
 end
 
@@ -808,7 +848,8 @@ Return the principal *n*-th root of *a*. Requires positive *n*.
 function root(a::qqbar, n::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()
-   ccall((:qqbar_root_ui, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}, UInt), z, a, n)
+   ccall((:qqbar_root_ui, libcalcium),
+        Nothing, (Ref{qqbar}, Ref{qqbar}, UInt), z, a, n)
    return z
 end
 
@@ -827,7 +868,8 @@ function array(R::CalciumQQBarField, v::Ptr{qqbar_struct}, n::Int)
 end
 
 function qqbar_vec_clear(v::Ptr{qqbar_struct}, n::Int)
-   ccall((:_qqbar_vec_clear, libcalcium), Nothing, (Ptr{qqbar_struct}, Int), v, n)
+   ccall((:_qqbar_vec_clear, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Int), v, n)
 end
 
 @doc Markdown.doc"""
@@ -844,7 +886,8 @@ function roots(f::fmpz_poly, R::CalciumQQBarField)
       return Array{qqbar}(undef, 0)
    end
    roots = qqbar_vec(deg)
-   ccall((:qqbar_roots_fmpz_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
+   ccall((:qqbar_roots_fmpz_poly, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{fmpz_poly}, Int), roots, f, 0)
    res = array(R, roots, deg)
    qqbar_vec_clear(roots, deg)
    return res
@@ -864,7 +907,8 @@ function roots(f::fmpq_poly, R::CalciumQQBarField)
       return Array{qqbar}(undef, 0)
    end
    roots = qqbar_vec(deg)
-   ccall((:qqbar_roots_fmpq_poly, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_poly}, Int), roots, f, 0)
+   ccall((:qqbar_roots_fmpq_poly, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{fmpq_poly}, Int), roots, f, 0)
    res = array(R, roots, deg)
    qqbar_vec_clear(roots, deg)
    return res
@@ -883,7 +927,8 @@ function conjugates(a::qqbar)
       return [a]
    end
    conjugates = qqbar_vec(deg)
-   ccall((:qqbar_conjugates, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
+   ccall((:qqbar_conjugates, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{qqbar}), conjugates, a)
    res = array(parent(a), conjugates, deg)
    qqbar_vec_clear(conjugates, deg)
    return res
@@ -904,7 +949,8 @@ function eigenvalues(A::fmpz_mat, R::CalciumQQBarField)
       return Array{qqbar}(undef, 0)
    end
    roots = qqbar_vec(n)
-   ccall((:qqbar_eigenvalues_fmpz_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpz_mat}, Int), roots, A, 0)
+   ccall((:qqbar_eigenvalues_fmpz_mat, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{fmpz_mat}, Int), roots, A, 0)
    res = array(R, roots, n)
    qqbar_vec_clear(roots, n)
    return res
@@ -925,7 +971,8 @@ function eigenvalues(A::fmpq_mat, R::CalciumQQBarField)
       return Array{qqbar}(undef, 0)
    end
    roots = qqbar_vec(n)
-   ccall((:qqbar_eigenvalues_fmpq_mat, libcalcium), Nothing, (Ptr{qqbar_struct}, Ref{fmpq_mat}, Int), roots, A, 0)
+   ccall((:qqbar_eigenvalues_fmpq_mat, libcalcium),
+        Nothing, (Ptr{qqbar_struct}, Ref{fmpq_mat}, Int), roots, A, 0)
    res = array(R, roots, n)
    qqbar_vec_clear(roots, n)
    return res
@@ -946,7 +993,8 @@ of algebraic numbers *C*.
 function root_of_unity(C::CalciumQQBarField, n::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()
-   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, 1, n)
+   ccall((:qqbar_root_of_unity, libcalcium),
+        Nothing, (Ref{qqbar}, Int, UInt), z, 1, n)
    return z
 end
 
@@ -959,7 +1007,8 @@ of algebraic numbers *C*.
 function root_of_unity(C::CalciumQQBarField, n::Int, k::Int)
    n <= 0 && throw(DomainError(n))
    z = qqbar()
-   ccall((:qqbar_root_of_unity, libcalcium), Nothing, (Ref{qqbar}, Int, UInt), z, k, n)
+   ccall((:qqbar_root_of_unity, libcalcium),
+        Nothing, (Ref{qqbar}, Int, UInt), z, k, n)
    return z
 end
 
@@ -969,7 +1018,8 @@ end
 Return whether the given algebraic number is a root of unity.
 """
 function is_root_of_unity(a::qqbar)
-   return Bool(ccall((:qqbar_is_root_of_unity, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), C_NULL, C_NULL, a))
+   return Bool(ccall((:qqbar_is_root_of_unity, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), C_NULL, C_NULL, a))
 end
 
 @doc Markdown.doc"""
@@ -982,7 +1032,8 @@ $0 \le p < q$. Throws if *a* is not a root of unity.
 function root_of_unity_as_args(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
-   if !Bool(ccall((:qqbar_is_root_of_unity, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+   if !Bool(ccall((:qqbar_is_root_of_unity, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
       throw(DomainError(a, "value is not a root of unity"))
    end
    return (q[1], p[1])
@@ -999,7 +1050,8 @@ function exp_pi_i(a::qqbar)
    p = Int(numerator(r))
    q = Int(denominator(r))
    z = qqbar()
-   ccall((:qqbar_exp_pi_i, libcalcium), Nothing, (Ref{qqbar}, Int, Int), z, p, q)
+   ccall((:qqbar_exp_pi_i, libcalcium),
+        Nothing, (Ref{qqbar}, Int, Int), z, p, q)
    return z
 end
 
@@ -1044,7 +1096,8 @@ function tanpi(a::qqbar)
    p = Int(numerator(r))
    q = Int(denominator(r))
    z = qqbar()
-   if !Bool(ccall((:qqbar_tan_pi, libcalcium), Cint, (Ref{qqbar}, Int, Int), z, p, q))
+   if !Bool(ccall((:qqbar_tan_pi, libcalcium),
+        Cint, (Ref{qqbar}, Int, Int), z, p, q))
       throw(DomainError(a, "function value is not algebraic"))
    end
    return z
@@ -1059,7 +1112,8 @@ Throws if this value is transcendental or undefined.
 function atanpi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
-   if !Bool(ccall((:qqbar_atan_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+   if !Bool(ccall((:qqbar_atan_pi, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
       throw(DomainError(a, "function value is not algebraic"))
    end
    return qqbar(p[1]) // q[1]
@@ -1074,7 +1128,8 @@ Throws if this value is transcendental.
 function asinpi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
-   if !Bool(ccall((:qqbar_asin_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+   if !Bool(ccall((:qqbar_asin_pi, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
       throw(DomainError(a, "function value is not algebraic"))
    end
    return qqbar(p[1]) // q[1]
@@ -1089,7 +1144,8 @@ Throws if this value is transcendental.
 function acospi(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
-   if !Bool(ccall((:qqbar_acos_pi, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+   if !Bool(ccall((:qqbar_acos_pi, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
       throw(DomainError(a, "function value is not algebraic"))
    end
    return qqbar(p[1]) // q[1]
@@ -1104,7 +1160,8 @@ Throws if this value is transcendental or undefined.
 function log_pi_i(a::qqbar)
    p = Vector{Int}(undef, 1)
    q = Vector{Int}(undef, 1)
-   if !Bool(ccall((:qqbar_log_pi_i, libcalcium), Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
+   if !Bool(ccall((:qqbar_log_pi_i, libcalcium),
+        Cint, (Ptr{Int}, Ptr{Int}, Ref{qqbar}), p, q, a))
       throw(DomainError(a, "function value is not algebraic"))
    end
    return qqbar(p[1]) // q[1]
@@ -1144,7 +1201,9 @@ function guess(R::CalciumQQBarField, x::acb, maxdeg::Int, maxbits::Int=0)
       maxbits = prec
    end
    res = qqbar()
-   found = Bool(ccall((:qqbar_guess, libcalcium), Cint, (Ref{qqbar}, Ref{acb}, Int, Int, Int, Int), res, x, maxdeg, maxbits, 0, prec))
+   found = Bool(ccall((:qqbar_guess, libcalcium),
+        Cint, (Ref{qqbar}, Ref{acb}, Int, Int, Int, Int),
+            res, x, maxdeg, maxbits, 0, prec))
    if !found
       error("No suitable algebraic number found")
    end
@@ -1191,7 +1250,8 @@ Throws if *a* is not a real number.
 function (R::ArbField)(a::qqbar)
    prec = precision(R)
    z = R()
-   ccall((:qqbar_get_arb, libcalcium), Nothing, (Ref{arb}, Ref{qqbar}, Int), z, a, prec)
+   ccall((:qqbar_get_arb, libcalcium),
+        Nothing, (Ref{arb}, Ref{qqbar}, Int), z, a, prec)
    !isfinite(z) && throw(DomainError(a, "nonreal algebraic number"))
    return z
 end
@@ -1205,7 +1265,8 @@ Throws if *a* is not a real number.
 function (R::AcbField)(a::qqbar)
    prec = precision(R)
    z = R()
-   ccall((:qqbar_get_acb, libcalcium), Nothing, (Ref{acb}, Ref{qqbar}, Int), z, a, prec)
+   ccall((:qqbar_get_acb, libcalcium),
+        Nothing, (Ref{acb}, Ref{qqbar}, Int), z, a, prec)
    return z
 end
 
@@ -1220,8 +1281,10 @@ function fmpq(a::qqbar)
    !isrational(a) && throw(DomainError(a), "nonrational algebraic number")
    p = fmpz()
    q = fmpz()
-   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), p, a, 0)
-   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, a, 1)
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint),
+        Nothing, (Ref{fmpz}, Ref{qqbar}, Int), p, a, 0)
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint),
+        Nothing, (Ref{fmpz}, Ref{qqbar}, Int), q, a, 1)
    ccall((:fmpz_neg, libflint), Nothing, (Ref{fmpz}, Ref{fmpz}), p, p)
    return p // q
 end
@@ -1235,7 +1298,8 @@ Throws if *a* is not an integer.
 function fmpz(a::qqbar)
    !isinteger(a) && throw(DomainError(a), "noninteger algebraic number")
    z = fmpz()
-   ccall((:fmpz_poly_get_coeff_fmpz, libflint), Nothing, (Ref{fmpz}, Ref{qqbar}, Int), z, a, 0)
+   ccall((:fmpz_poly_get_coeff_fmpz, libflint),
+        Nothing, (Ref{fmpz}, Ref{qqbar}, Int), z, a, 0)
    ccall((:fmpz_neg, libflint), Nothing, (Ref{fmpz}, Ref{fmpz}), z, z)
    return z
 end

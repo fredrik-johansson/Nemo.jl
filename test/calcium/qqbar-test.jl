@@ -97,6 +97,9 @@ end
    @test minpoly(ZZx, u) == x^2 - 2
    @test minpoly(QQy, u) == y^2 - 2
 
+   @test evaluate(x^2, u) == qqbar(2)
+   @test evaluate(y^2, u) == qqbar(2)
+
    @test root(qqbar(-1), 3) == root_of_unity(R, 6)
    @test root_of_unity(R, 4) == i
    @test root_of_unity(R, 4, 3) == -i
