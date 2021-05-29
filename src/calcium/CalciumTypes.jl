@@ -8,6 +8,26 @@ export CalciumQQBarField, qqbar, CalciumField, ca, options
 
 ################################################################################
 #
+#  truth_t triple-valued logic
+#
+################################################################################
+
+const T_TRUE = 0
+const T_FALSE = 1
+const T_UNKNOWN = 2
+
+function truth_as_bool(t::Cint, operation::Symbol)
+   if t == T_TRUE
+      return true
+   elseif t == T_FALSE
+      return false
+   else
+      error("Unable to perform operation (failed deciding truth of a predicate): ", operation)
+   end
+end
+
+################################################################################
+#
 #  Structs for shallow operations
 #
 ################################################################################

@@ -11,8 +11,9 @@ of an extension field of the rational numbers. That is,
 $z \in \mathbb{Q}(a_1,\ldots,a_n)$
 
 where $a_1, \ldots, a_n$
-are symbolically defined
-real or complex numbers such as $\pi$, $\sqrt{2}$ or $e^{\sqrt{2} \pi i}$.
+are symbolically defined algebraic or transcendental
+real or complex numbers
+such as $\pi$, $\sqrt{2}$ or $e^{\sqrt{2} \pi i}$.
 The user does not normally need to worry about the details of
 the internal representation;
 Calcium constructs extension numbers and fields automatically
@@ -113,4 +114,9 @@ For a detailed explanation, refer to the following section
 in the Calcium documentation:
 <https://fredrikj.net/calcium/ca.html#context-options>
 
+## Rewriting and simplification
+
+```@docs
+complex_normal_form(a::ca, deep::Bool=true)
+```
 
