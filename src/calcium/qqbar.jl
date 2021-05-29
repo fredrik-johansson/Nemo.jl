@@ -495,6 +495,13 @@ end
 #
 ###############################################################################
 
+function inv(a::qqbar)
+   iszero(a) && throw(DivideError())
+   z = qqbar()
+   ccall((:qqbar_inv, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
+
 function divexact(a::qqbar, b::qqbar)
    iszero(b) && throw(DivideError())
    z = qqbar()
