@@ -114,9 +114,21 @@ For a detailed explanation, refer to the following section
 in the Calcium documentation:
 <https://fredrikj.net/calcium/ca.html#context-options>
 
+## Conversions and numerical evaluation
+
+## Special values and constants
+
+## Comparisons and properties
+
+## Complex parts
+
+## Elementary functions
+
+## Special functions
+
 ## Rewriting and simplification
 
 ```@docs
-complex_normal_form(a::ca, deep::Bool=true)
+complex_normal_form(a::ca; deep::Bool=true)
 ```
 
