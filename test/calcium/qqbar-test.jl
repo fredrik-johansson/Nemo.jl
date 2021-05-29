@@ -76,6 +76,7 @@ end
    @test height_bits(qqbar(1+10im)) == 7
 
    @test inv(u) == u // 2
+
    @test abs(-u) == u
    @test abs2(u) == 2
    @test u != i
