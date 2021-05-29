@@ -6,7 +6,7 @@
 
 export ca, CalciumField, inf, uinf, undefined, unknown, const_pi, const_euler,
        const_i, complex_normal_form, csgn,
-       gamma, erf, erfi, erfc
+       pow, gamma, erf, erfi, erfc
 
 ###############################################################################
 #
@@ -156,6 +156,35 @@ function +(a::ca, b::ca)
    return r
 end
 
+function +(a::ca, b::Int)
+   C = a.parent
+   r = C()
+   ccall((:ca_add_si, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function +(a::ca, b::fmpz)
+   C = a.parent
+   r = C()
+   ccall((:ca_add_fmpz, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpz}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function +(a::ca, b::fmpq)
+   C = a.parent
+   r = C()
+   ccall((:ca_add_fmpq, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpq}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
++(a::ca, b::qqbar) = a + parent(a)(b)
+
 function -(a::ca, b::ca)
    a, b = same_parent(a, b)
    C = a.parent
@@ -165,6 +194,64 @@ function -(a::ca, b::ca)
    check_special(r)
    return r
 end
+
+function -(a::ca, b::Int)
+   C = a.parent
+   r = C()
+   ccall((:ca_sub_si, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function -(a::ca, b::fmpz)
+   C = a.parent
+   r = C()
+   ccall((:ca_sub_fmpz, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpz}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function -(a::ca, b::fmpq)
+   C = a.parent
+   r = C()
+   ccall((:ca_sub_fmpq, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpq}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+-(a::ca, b::qqbar) = a - parent(a)(b)
+
+function -(a::Int, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_si_sub, libcalcium), Nothing,
+         (Ref{ca}, Int, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function -(a::fmpz, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_fmpz_sub, libcalcium), Nothing,
+         (Ref{ca}, Ref{fmpz}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function -(a::fmpq, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_fmpq_sub, libcalcium), Nothing,
+         (Ref{ca}, Ref{fmpq}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+-(a::qqbar, b::ca) = parent(b)(a) - b
 
 function *(a::ca, b::ca)
    a, b = same_parent(a, b)
@@ -176,6 +263,41 @@ function *(a::ca, b::ca)
    return r
 end
 
+function *(a::ca, b::Int)
+   C = a.parent
+   r = C()
+   ccall((:ca_mul_si, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function *(a::ca, b::fmpz)
+   C = a.parent
+   r = C()
+   ccall((:ca_mul_fmpz, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpz}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function *(a::ca, b::fmpq)
+   C = a.parent
+   r = C()
+   ccall((:ca_mul_fmpq, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpq}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+*(a::ca, b::qqbar) = a * parent(a)(b)
+
+*(a::Int, b::ca) = b * a
+*(a::fmpz, b::ca) = b * a
+*(a::fmpq, b::ca) = b * a
+*(a::qqbar, b::ca) = b * a
+
+
 function //(a::ca, b::ca)
    a, b = same_parent(a, b)
    C = a.parent
@@ -186,6 +308,74 @@ function //(a::ca, b::ca)
    return r
 end
 
+function //(a::ca, b::Int)
+   C = a.parent
+   r = C()
+   ccall((:ca_div_si, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function //(a::ca, b::fmpz)
+   C = a.parent
+   r = C()
+   ccall((:ca_div_fmpz, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpz}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function //(a::ca, b::fmpq)
+   C = a.parent
+   r = C()
+   ccall((:ca_div_fmpq, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpq}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+//(a::ca, b::qqbar) = a // parent(a)(b)
+
+function //(a::Int, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_si_div, libcalcium), Nothing,
+         (Ref{ca}, Int, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function //(a::fmpz, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_fmpz_div, libcalcium), Nothing,
+         (Ref{ca}, Ref{fmpz}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function //(a::fmpq, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_fmpq_div, libcalcium), Nothing,
+         (Ref{ca}, Ref{fmpq}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+//(a::qqbar, b::ca) = parent(b)(a) // b
+
+divexact(a::ca, b::ca) = a // b
+divexact(a::ca, b::Int) = a // b
+divexact(a::ca, b::fmpz) = a // b
+divexact(a::ca, b::fmpq) = a // b
+divexact(a::ca, b::qqbar) = a // b
+divexact(a::Int, b::ca) = a // b
+divexact(a::fmpz, b::ca) = a // b
+divexact(a::fmpq, b::ca) = a // b
+divexact(a::qqbar, b::ca) = a // b
+
 function ^(a::ca, b::ca)
    a, b = same_parent(a, b)
    C = a.parent
@@ -195,6 +385,40 @@ function ^(a::ca, b::ca)
    check_special(r)
    return r
 end
+
+function ^(a::ca, b::Int)
+   C = a.parent
+   r = C()
+   ccall((:ca_pow_si, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function ^(a::ca, b::fmpz)
+   C = a.parent
+   r = C()
+   ccall((:ca_pow_fmpz, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpz}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function ^(a::ca, b::fmpq)
+   C = a.parent
+   r = C()
+   ccall((:ca_pow_fmpq, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{fmpq}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+^(a::ca, b::qqbar) = a ^ parent(a)(b)
+
+^(a::Int, b::ca) = parent(b)(a) ^ b
+^(a::fmpz, b::ca) = parent(b)(a) ^ b
+^(a::fmpq, b::ca) = parent(b)(a) ^ b
+^(a::qqbar, b::ca) = parent(b)(a) ^ b
 
 function -(a::ca)
    C = a.parent
@@ -511,6 +735,22 @@ function log(a::ca)
    r = C()
    ccall((:ca_log, libcalcium), Nothing,
          (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
+   check_special(r)
+   return r
+end
+
+function pow(a::ca, b::Int; form::Symbol=:default)
+   C = a.parent
+   r = C()
+   if form == :default
+      ccall((:ca_pow_si, libcalcium), Nothing,
+             (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   elseif form == :arithmetic
+      ccall((:ca_pow_si_arithmetic, libcalcium), Nothing,
+             (Ref{ca}, Ref{ca}, Int, Ref{CalciumField}), r, a, b, C)
+   else
+      error("unknown form: ", form)
+   end
    check_special(r)
    return r
 end
