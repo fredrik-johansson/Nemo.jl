@@ -78,6 +78,11 @@ function qqbar(a::fmpq)
    return z
 end
 
+function deepcopy_internal(a::qqbar, dict::IdDict)
+   z = qqbar()
+   ccall((:qqbar_set, libcalcium), Nothing, (Ref{qqbar}, Ref{qqbar}), z, a)
+   return z
+end
 
 ###############################################################################
 #

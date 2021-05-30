@@ -25,6 +25,9 @@
    @test isa(qqbar(fmpz(2)), qqbar)
    @test isa(qqbar(fmpq(2)), qqbar)
 
+   x = R(1)
+   @test deepcopy(x) !== x
+
 end
 
 @testset "qqbar.printing" begin

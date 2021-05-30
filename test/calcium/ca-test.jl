@@ -28,6 +28,10 @@
    @test parent(parent(a)(a2)) == C
    @test parent(parent(a2)(a)) == C2
 
+   t = C(1)
+   @test deepcopy(t) !== t
+   @test deepcopy(t).parent === t.parent
+
 end
 
 @testset "ca.options" begin

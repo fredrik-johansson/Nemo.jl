@@ -140,6 +140,7 @@ mutable struct CalciumField <: Field
 
    function CalciumField(; extended::Bool=false, options::Dict{Symbol,Int}=Dict{Symbol,Int}())
       C = new()
+
       ccall((:ca_ctx_init, libcalcium), Nothing, (Ref{CalciumField}, ), C)
       finalizer(_CalciumField_clear_fn, C)
       C.extended = extended

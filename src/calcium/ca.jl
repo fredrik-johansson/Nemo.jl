@@ -27,6 +27,14 @@ base_ring(a::ca) = Union{}   #  ?
 
 isdomain_type(::Type{ca}) = true
 
+function deepcopy_internal(a::ca, dict::IdDict)
+   C = a.parent
+   r = C()
+   ccall((:ca_set, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
+   return r
+end
+
 ###############################################################################
 #
 #   Hashing

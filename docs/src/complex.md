@@ -114,11 +114,89 @@ For a detailed explanation, refer to the following section
 in the Calcium documentation:
 <https://fredrikj.net/calcium/ca.html#context-options>
 
+## Basic examples
+
+julia> C = CalciumField()
+Exact Complex Field
+
+julia> exp(C(pi) * C(1im)) + 1
+0
+
+julia> log(C(10)^23) // log(C(100))
+11.5000 {23/2}
+
+julia> 4*atan(C(1)//5) - atan(C(1)//239) == C(pi)//4
+true
+
+
 ## Conversions and numerical evaluation
 
-## Special values and constants
+Calcium numbers can be converted to integers, rational and algebraic fields
+provided that the values are integer, rational or algebraic.
+An exception is thrown if the value does not belong to the target domain,
+if Calcium is unable to prove that the value belongs
+to the target domain, or if Calcium is unable to compute the explicit
+value because of evaluation limits.
+
+```julia
+julia> C = CalciumField()
+Exact Complex Field
+
+julia> QQ(C(1))
+1
+
+julia> QQBar(sqrt(C(2)) // 2)
+Root 0.707107 of 2x^2 - 1
+
+julia> QQ(C(pi))
+ERROR: unable to convert to a rational number
+
+julia> QQ(C(10) ^ C(10^9))
+ERROR: unable to convert to a rational number
+```
+
+To compute arbitrary-precision numerical enclosures, convert to
+`ArbField` or `AcbField`:
+
+```julia
+julia> CC = AcbField(64);
+
+julia> CC(exp(C(1im)))
+[0.54030230586813971740 +/- 9.37e-22] + [0.84147098480789650665 +/- 2.51e-21]*im
+```
+
+Todo: comment on issues here
 
 ## Comparisons and properties
+
+## Infinities and special values
+
+By default, `CalciumField` does not permit creating values that are not
+numbers, and any non-number value (unsigned infinity, signed infinity,
+Undefined) will result in an exception.
+This also applies to the special value Unknown, used in situations
+where Calcium is unable to prove that a value is a number.
+To enable special values, use `extended=true`.
+
+```julia
+julia> C = CalciumField()
+Exact Complex Field
+
+julia> 1 // C(0)
+ERROR: DomainError with UnsignedInfinity:
+Non-number result
+...
+
+julia> Cext = CalciumField(extended=true)
+Exact Complex Field (Extended)
+
+julia> 1 // Cext(0)
+UnsignedInfinity
+```
+
+Note that special values do not satisfy the properties of a mathematical
+ring or field. You will likely get meaningless results if you put
+infinities in matrices or polynomials.
 
 ## Complex parts
 
