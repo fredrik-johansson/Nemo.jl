@@ -198,6 +198,16 @@ end
    @test fmpq(6) // C(2) == 3
    @test qqbar(6) // C(2) == 3
 
+   @test divexact(C(6), C(2)) == 3
+   @test divexact(C(6), 2) == 3
+   @test divexact(C(6), fmpz(2)) == 3
+   @test divexact(C(6), fmpq(2)) == 3
+   @test divexact(C(6), qqbar(2)) == 3
+   @test divexact(6, C(2)) == 3
+   @test divexact(fmpz(6), C(2)) == 3
+   @test divexact(fmpq(6), C(2)) == 3
+   @test divexact(qqbar(6), C(2)) == 3
+
    @test C(2) ^ C(3) == 8
    @test C(2) ^ 3 == 8
    @test C(2) ^ fmpz(3) == 8
@@ -255,6 +265,8 @@ end
 
    @test overlaps(RR(s), sin(RR(1)))
    @test overlaps(RR(s, check=false), sin(RR(1)))
+
+   @test contains(RR(C(1im)*s, check=false), 0)
 
 end
 

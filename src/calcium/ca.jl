@@ -1045,7 +1045,7 @@ function (R::ArbField)(a::ca; check::Bool=true)
       end
    else
       z = AcbField(prec)(a, parts=false)
-      if accuracy_bits(z) < prec - 5
+      if accuracy_bits(real(z)) < prec - 5
           z = AcbField(prec)(a, parts=true)
       end
       return real(z)
