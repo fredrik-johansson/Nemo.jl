@@ -30,6 +30,11 @@
 
 end
 
+@testset "ca.options" begin
+   C = CalciumField(options=Dict(:prec_limit => 256))
+   @test options(C)[:prec_limit] == 256
+end
+
 @testset "ca.printing" begin
    C = CalciumField()
    Cext = CalciumField(extended=true)
@@ -41,6 +46,8 @@ end
    @test string(Cext(1)) == "1"
 
    @test string(C(pi)) == "3.14159 {a where a = 3.14159 [Pi]}"
+
+   @test needs_parentheses(C(pi))
 
 end
 
@@ -62,6 +69,8 @@ end
 
    u = sqrt(C(2))
    i = sqrt(C(-1))
+
+   @test isalgebraic(u)
 
    @test i == C(0+1im)
    @test 3+4*i == C(3+4im)
@@ -193,6 +202,7 @@ end
    @test C(2) ^ 3 == 8
    @test C(2) ^ fmpz(3) == 8
    @test C(2) ^ fmpq(3) == 8
+   @test C(2) ^ qqbar(3) == 8
    @test 2 ^ C(3) == 8
    @test fmpz(2) ^ C(3) == 8
    @test fmpq(2) ^ C(3) == 8
@@ -207,6 +217,44 @@ end
    @test fmpz(2) < C(3)
    @test fmpq(2) < C(3)
    @test qqbar(2) < C(3)
+
+end
+
+@testset "ca.conversions" begin
+   C = CalciumField()
+
+   n = C(3)
+   h = C(1) // 2
+   c = C(1+2im)
+   t = C(pi)
+
+   @test FlintZZ(n) == 3
+
+   @test FlintQQ(h) == fmpq(1) // 2
+   @test_throws ErrorException FlintZZ(h)
+
+   @test CalciumQQBar(h) == qqbar(1) // 2
+   @test CalciumQQBar(c) == qqbar(1+2im)
+   @test_throws ErrorException CalciumQQBar(t)
+
+   RR = ArbField(64)
+   CC = AcbField(64)
+
+   @test RR(h) == 0.5
+   @test CC(h) == 0.5
+   @test CC(c) == CC(1,2)
+   @test overlaps(RR(t), RR(pi))
+   @test overlaps(CC(t), CC(RR(pi)))
+
+   @test_throws ErrorException RR(c)
+   @test RR(c, check=false) == 1.0
+
+   s = sin(C(1), form=:exponential)
+
+   @test isreal(CC(s, parts=true))
+
+   @test overlaps(RR(s), sin(RR(1)))
+   @test overlaps(RR(s, check=false), sin(RR(1)))
 
 end
 
@@ -243,11 +291,19 @@ end
 
 end
 
+Base.@irrational mynumber 1.0 BigFloat("1")
+
 @testset "ca.functions" begin
    C = CalciumField()
 
    u = sqrt(C(2))
    i = sqrt(C(-1))
+
+   @test const_pi(C) == C(pi)
+   @test const_i(C) == C(1im)
+   @test C(1)//2 < const_euler(C)  + C(3)//5
+
+   @test_throws ErrorException C(mynumber)
 
    @test real(3+4*i) == 3
    @test imag(3+4*i) == 4
@@ -305,6 +361,34 @@ end
    @test gamma(C(5)) == 24
    @test erf(C(1)) == 1 - erfc(C(1))
    @test erfi(C(1)) == -i*erf(i)
+
+   @test string(complex_normal_form(sin(C(1), form=:direct)) + C(1im)) ==
+     "0.841471 + 1.00000*I {(-a^2*b+2*a*b+b)/(2*a) where a = 0.540302 + 0.841471*I [Exp(1.00000*I {b})], b = I [b^2+1=0]}"
+
+end
+
+@testset "ca.rand" begin
+   C = CalciumField()
+   Cext = CalciumField(extended=true)
+
+   for i=1:10
+      x = rand(C, depth=5, bits=5)
+      @test isnumber(x)
+   end
+
+   for i=1:10
+      x = rand(C, depth=5, bits=5, randtype=:rational)
+      @test isrational(x)
+   end
+
+   @test_throws DomainError [rand(C, depth=1, bits=1, randtype=:special) for i=1:100]
+
+   for i=1:10
+      x = rand(Cext, depth=1, bits=1, randtype=:special)
+      @test parent(x) == Cext
+   end
+
+   @test_throws ErrorException rand(C, depth=2, bits=5, randtype=:gollum)
 
 end
 

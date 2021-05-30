@@ -6,8 +6,8 @@
 
 export ca, CalciumField, infinity, unsigned_infinity, undefined, unknown,
        const_pi, const_euler, const_i, complex_normal_form, csgn, isnumber,
-       isimaginary, isspecial, isinf, isuinf, is_signed_inf, isunknown,
-       isundefined, pow, gamma, erf, erfi, erfc
+       isimaginary, isalgebraic, isspecial, isinf, isuinf, is_signed_inf,
+       isunknown, isundefined, pow, gamma, erf, erfi, erfc
 
 ###############################################################################
 #
@@ -112,7 +112,7 @@ function rand(C::CalciumField; depth::Int, bits::Int,
           (Ref{ca}, Ptr{Cvoid}, Int, Ref{CalciumField}),
                 x, state.ptr, bits, C)
    elseif randtype == :special
-      ccall((:ca_randtest, libcalcium), Nothing,
+      ccall((:ca_randtest_special, libcalcium), Nothing,
           (Ref{ca}, Ptr{Cvoid}, Int, Int, Ref{CalciumField}),
                 x, state.ptr, depth, bits, C)
    else
