@@ -4,9 +4,10 @@
 #
 ###############################################################################
 
-export ca, CalciumField, inf, uinf, undefined, unknown, const_pi, const_euler,
-       const_i, complex_normal_form, csgn,
-       pow, gamma, erf, erfi, erfc
+export ca, CalciumField, infinity, unsigned_infinity, undefined, unknown,
+       const_pi, const_euler, const_i, complex_normal_form, csgn, isnumber,
+       isimaginary, isspecial, isinf, isuinf, is_signed_inf, isunknown,
+       isundefined, pow, gamma, erf, erfi, erfc
 
 ###############################################################################
 #
@@ -51,6 +52,14 @@ canonical_unit(a::ca) = a
 #
 ###############################################################################
 
+function show(io::IO, C::CalciumField)
+   if C.extended
+     print(io, "Exact Complex Field (Extended)")
+   else
+     print(io, "Exact Complex Field")
+   end
+end
+
 function native_string(x::ca)
    cstr = ccall((:ca_get_str, libcalcium),
         Ptr{UInt8}, (Ref{ca}, Ref{CalciumField}), x, x.parent)
@@ -76,8 +85,7 @@ zero(C::CalciumField) = C()
 
 function one(C::CalciumField)
    z = ca(C)
-   ccall((:ca_one, libcalcium), Nothing,
-         (Ref{ca}, Int, Ref{CalciumField}), z, v, C)
+   ccall((:ca_one, libcalcium), Nothing, (Ref{ca}, Ref{CalciumField}), z, C)
    return z
 end
 
@@ -142,7 +150,7 @@ function same_parent(a::ca, b::ca)
          (Ref{ca}, Ref{CalciumField}, Ref{ca}, Ref{CalciumField}),
          r, a.parent, b, b.parent)
       check_special(r)
-      return r
+      return (a, r)
    end
 end
 
@@ -485,7 +493,7 @@ end
 
 function isone(a::ca)
    C = a.parent
-   t = ccall((:ca_check_is_zero, libcalcium), Cint,
+   t = ccall((:ca_check_is_one, libcalcium), Cint,
         (Ref{ca}, Ref{CalciumField}), a, C)
    return truth_as_bool(t, :isone)
 end
@@ -553,6 +561,14 @@ function is_signed_inf(a::ca)
    return truth_as_bool(t, :is_signed_inf)
 end
 
+function isunknown(a::ca)
+   C = a.parent
+   t = Bool(ccall((:ca_is_unknown, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C))
+   return t
+end
+
+
 ###############################################################################
 #
 #   Special values and constants
@@ -577,7 +593,7 @@ function const_i(C::CalciumField)
    return r
 end
 
-function uinf(C::CalciumField)
+function unsigned_infinity(C::CalciumField)
    r = C()
    ccall((:ca_uinf, libcalcium), Nothing,
          (Ref{ca}, Ref{CalciumField}), r, C)
@@ -585,10 +601,20 @@ function uinf(C::CalciumField)
    return r
 end
 
-function inf(C::CalciumField)
+function infinity(C::CalciumField)
    r = C()
    ccall((:ca_pos_inf, libcalcium), Nothing,
          (Ref{ca}, Ref{CalciumField}), r, C)
+   check_special(r)
+   return r
+end
+
+function infinity(a::ca)
+   C = parent(a)
+   r = C()
+   ccall((:ca_pos_inf, libcalcium), Nothing,
+         (Ref{ca}, Ref{CalciumField}), r, C)
+   r *= a
    check_special(r)
    return r
 end
