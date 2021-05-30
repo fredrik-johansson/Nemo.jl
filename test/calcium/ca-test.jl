@@ -146,4 +146,165 @@ end
 
 end
 
+@testset "ca.adhoc-operations" begin
+   C = CalciumField()
+
+   @test C(2) + C(3) == 5
+   @test C(2) + 3 == 5
+   @test C(2) + fmpz(3) == 5
+   @test C(2) + fmpq(3) == 5
+   @test C(2) + qqbar(3) == 5
+   @test 3 + C(2) == 5
+   @test fmpz(3) + C(2) == 5
+   @test fmpq(3) + C(2) == 5
+   @test qqbar(3) + C(2) == 5
+
+   @test C(2) - C(3) == -1
+   @test C(2) - 3 == -1
+   @test C(2) - fmpz(3) == -1
+   @test C(2) - fmpq(3) == -1
+   @test C(2) - qqbar(3) == -1
+   @test 3 - C(2) == 1
+   @test fmpz(3) - C(2) == 1
+   @test fmpq(3) - C(2) == 1
+   @test qqbar(3) - C(2) == 1
+
+   @test C(2) * C(3) == 6
+   @test C(2) * 3 == 6
+   @test C(2) * fmpz(3) == 6
+   @test C(2) * fmpq(3) == 6
+   @test C(2) * qqbar(3) == 6
+   @test 3 * C(2) == 6
+   @test fmpz(3) * C(2) == 6
+   @test fmpq(3) * C(2) == 6
+   @test qqbar(3) * C(2) == 6
+
+   @test C(6) // C(2) == 3
+   @test C(6) // 2 == 3
+   @test C(6) // fmpz(2) == 3
+   @test C(6) // fmpq(2) == 3
+   @test C(6) // qqbar(2) == 3
+   @test 6 // C(2) == 3
+   @test fmpz(6) // C(2) == 3
+   @test fmpq(6) // C(2) == 3
+   @test qqbar(6) // C(2) == 3
+
+   @test C(2) ^ C(3) == 8
+   @test C(2) ^ 3 == 8
+   @test C(2) ^ fmpz(3) == 8
+   @test C(2) ^ fmpq(3) == 8
+   @test 2 ^ C(3) == 8
+   @test fmpz(2) ^ C(3) == 8
+   @test fmpq(2) ^ C(3) == 8
+   @test qqbar(2) ^ C(3) == 8
+
+   @test C(2) < C(3)
+   @test C(2) < 3
+   @test C(2) < fmpz(3)
+   @test C(2) < fmpq(3)
+   @test C(2) < qqbar(3)
+   @test 2 < C(3)
+   @test fmpz(2) < C(3)
+   @test fmpq(2) < C(3)
+   @test qqbar(2) < C(3)
+
+end
+
+@testset "ca.inplace" begin
+   C = CalciumField()
+   C2 = CalciumField()
+
+   x = C(7)
+   zero!(x)
+   @test x == 0
+
+   x = C(7)
+   y = mul!(x, C(3), C(5))
+   @test x == 15
+   @test x === y
+
+   @test_throws ErrorException mul!(x, C2(3), C(5))
+   @test_throws ErrorException mul!(x, C(3), C2(5))
+
+   x = C(7)
+   y = addeq!(x, C(3))
+   @test x == 10
+   @test x === y
+
+   @test_throws ErrorException addeq!(x, C2(3))
+
+   x = C(7)
+   y = add!(x, C(3), C(5))
+   @test x == 8
+   @test x === y
+
+   @test_throws ErrorException add!(x, C2(3), C(5))
+   @test_throws ErrorException add!(x, C(3), C2(5))
+
+end
+
+@testset "ca.functions" begin
+   C = CalciumField()
+
+   u = sqrt(C(2))
+   i = sqrt(C(-1))
+
+   @test real(3+4*i) == 3
+   @test imag(3+4*i) == 4
+   @test angle(2+2*i) == C(pi) // 4
+   @test csgn(-i) == -1
+   @test sign(2*i) == i
+   @test abs(1+i) == u
+   @test conj(1+i) == 1-i
+   @test conj(1+C(pi)*i, form=:deep) == 1-C(pi)*i
+   @test conj(1+C(pi)*i, form=:shallow) == 1-C(pi)*i
+   @test_throws ErrorException conj(1+C(pi)*i, form=:gollum)
+
+   @test floor(u) == 1
+   @test ceil(u) == 2
+   @test sqrt(i) == (1+i)*u//2
+   @test exp(C(pi) * i) == -1
+   @test log(exp(u)) == u
+
+   @test pow(1 + C(pi), 25) == pow(1 + C(pi), 25, form=:arithmetic)
+   @test_throws ErrorException pow(1 + C(pi), 25, form=:gollum)
+
+   @test sin(C(1)) == sin(C(1), form=:exponential)
+   @test sin(C(1)) == sin(C(1), form=:tangent)
+   @test sin(C(1)) == sin(C(1), form=:direct)
+   @test_throws ErrorException sin(C(1), form=:gollum)
+
+   @test cos(C(1)) == cos(C(1), form=:exponential)
+   @test cos(C(1)) == cos(C(1), form=:tangent)
+   @test cos(C(1)) == cos(C(1), form=:direct)
+   @test_throws ErrorException cos(C(1), form=:gollum)
+
+   @test cos(u)^2 + sin(u)^2 == 1
+
+   @test tan(C(1)) == tan(C(1), form=:exponential)
+   @test tan(C(1)) == tan(C(1), form=:sine_cosine)
+   @test tan(C(1)) == tan(C(1), form=:direct)
+   @test_throws ErrorException tan(C(1), form=:gollum)
+
+   @test atan(C(1)) == C(pi)//4
+   @test atan(C(2)) == atan(C(2), form=:logarithm)
+   @test atan(C(2)) == atan(C(2), form=:arctangent)
+   @test atan(C(2)) == atan(C(2), form=:direct)
+   @test_throws ErrorException atan(C(2), form=:gollum)
+
+   @test asin(C(1)) == C(pi)//2
+   @test asin(C(2)) == asin(C(2), form=:logarithm)
+   @test asin(C(2)) == asin(C(2), form=:direct)
+   @test_throws ErrorException asin(C(2), form=:gollum)
+
+   @test acos(C(-1)) == C(pi)
+   @test acos(C(2)) == acos(C(2), form=:logarithm)
+   @test acos(C(2)) == acos(C(2), form=:direct)
+   @test_throws ErrorException acos(C(2), form=:gollum)
+
+   @test gamma(C(5)) == 24
+   @test erf(C(1)) == 1 - erfc(C(1))
+   @test erfi(C(1)) == -i*erf(i)
+
+end
 
