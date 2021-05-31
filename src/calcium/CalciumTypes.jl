@@ -137,9 +137,12 @@ mutable struct CalciumField <: Field
    options::Ptr{Int}
 
    extended::Bool
+   refcount::Int
 
    function CalciumField(; extended::Bool=false, options::Dict{Symbol,Int}=Dict{Symbol,Int}())
       C = new()
+
+      # println("CREATE CALCIUMFIELD")
 
       ccall((:ca_ctx_init, libcalcium), Nothing, (Ref{CalciumField}, ), C)
       finalizer(_CalciumField_clear_fn, C)
@@ -151,6 +154,7 @@ mutable struct CalciumField <: Field
          ccall((:ca_ctx_set_option, libcalcium), Nothing, (Ref{CalciumField}, Int, Int), C, i - 1, value)
       end
 
+      C.refcount = 1
       return C
    end
 end
@@ -164,7 +168,11 @@ function options(C::CalciumField)
 end
 
 function _CalciumField_clear_fn(C::CalciumField)
-   ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), C)
+   C.refcount -= 1
+   if C.refcount == 0
+      # println("CLEAR CALCIUMFIELD NATURALLY")
+      ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), C)
+   end
 end
 
 mutable struct ca <: FieldElem
@@ -182,6 +190,7 @@ mutable struct ca <: FieldElem
       ccall((:ca_init, libcalcium), Nothing,
                 (Ref{ca}, Ref{CalciumField}), z, ctx)
       z.parent = ctx
+      z.parent.refcount += 1
       finalizer(_ca_clear_fn, z)
       return z
    end
@@ -190,6 +199,11 @@ end
 
 function _ca_clear_fn(a::ca)
    ccall((:ca_clear, libcalcium),
-        Nothing, (Ref{ca}, Ref{CalciumField}), a, parent(a))
+        Nothing, (Ref{ca}, Ref{CalciumField}), a, a.parent)
+   a.parent.refcount -= 1
+   if a.parent.refcount == 0
+      # println("CLEAR CALCIUMFIELD MOST UNNATURALLY")
+      ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), a.parent)
+   end
 end
 
