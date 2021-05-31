@@ -356,6 +356,11 @@ ring or field. You will likely get meaningless results if you put
 infinities in matrices or polynomials.
 
 ```@docs
+unsigned_infinity(C::CalciumField)
+infinity(C::CalciumField)
+infinity(a::ca)
+undefined(C::CalciumField)
+unknown(C::CalciumField)
 isnumber(a::ca)
 isundefined(a::ca)
 isinf(a::ca)
@@ -366,9 +371,159 @@ isunknown(a::ca)
 
 ## Complex parts
 
-## Elementary functions
+Functions for computing components of real and complex numbers
+will perform automatic symbolic simplifications in special cases.
+In general, such operations will introduce new extension numbers.
 
-## Special functions
+```julia
+julia> real(C(2+3im))
+2
+
+julia> sign(C(2im))
+1.00000*I {a where a = I [a^2+1=0]}
+
+julia> sign(C(2+3im))
+0.554700 + 0.832050*I {a where a = 0.554700 + 0.832050*I [13*a^4+10*a^2+13=0]}
+
+julia> angle(C(2+2im))
+0.785398 {(a)/4 where a = 3.14159 [Pi]}
+
+julia> angle(C(2+3im))
+0.982794 {a where a = 0.982794 [Arg(2.00000 + 3.00000*I {3*b+2})], b = I [b^2+1=0]}
+
+julia> angle(C(2+3im)) == atan(C(3)//2)
+true
+
+julia> floor(C(pi) ^ 100)
+5.18785e+49 {51878483143196131920862615246303013562686760680405}
+
+julia> ZZ(floor(C(pi) ^ 100))
+51878483143196131920862615246303013562686760680405
+```
+
+**Interface**
+
+```@docs
+real(a::ca)
+imag(a::ca)
+angle(a::ca)
+csgn(a::ca)
+sign(a::ca)
+abs(a::ca)
+conj(a::ca; form::Symbol=:default)
+floor(a::ca)
+ceil(a::ca)
+```
+
+## Elementary and special functions
+
+Elementary and special functions generally create new extension numbers.
+In special cases, simplifications occur automatically.
+
+```julia
+julia> exp(C(1))
+2.71828 {a where a = 2.71828 [Exp(1)]}
+
+julia> exp(C(0))
+1
+
+julia> atan(C(1))
+0.785398 {(a)/4 where a = 3.14159 [Pi]}
+
+julia> cos(C(1))^2 + sin(C(1))^2
+1
+
+julia> log(1 // exp(sqrt(C(2))+1)) == -sqrt(C(2)) - 1
+true
+
+julia> gamma(C(2+3im))
+-0.0823953 + 0.0917743*I {a where a = -0.0823953 + 0.0917743*I [Gamma(2.00000 + 3.00000*I {3*b+2})], b = I [b^2+1=0]}
+
+julia> gamma(C(5) // 2)
+1.32934 {(3*a)/4 where a = 1.77245 [Sqrt(3.14159 {b})], b = 3.14159 [Pi]}
+
+julia> erf(C(1))
+0.842701 {a where a = 0.842701 [Erf(1)]}
+
+julia> erf(C(1)) + erfc(C(1))
+1
+```
+
+Some functions allow representing the result in different forms:
+
+```julia
+julia> s1 = sin(C(1))
+0.841471 - 0e-24*I {(-a^2*b+b)/(2*a) where a = 0.540302 + 0.841471*I [Exp(1.00000*I {b})], b = I [b^2+1=0]}
+
+julia> s2 = sin(C(1), form=:direct)
+0.841471 {a where a = 0.841471 [Sin(1)]}
+
+julia> s3 = sin(C(1), form=:exponential)
+0.841471 - 0e-24*I {(-a^2*b+b)/(2*a) where a = 0.540302 + 0.841471*I [Exp(1.00000*I {b})], b = I [b^2+1=0]}
+
+julia> s4 = sin(C(1), form=:tangent)
+0.841471 {(2*a)/(a^2+1) where a = 0.546302 [Tan(0.500000 {1/2})]}
+
+julia> s1 == s2 == s3 == s4
+true
+
+julia> isreal(s1) && isreal(s2) && isreal(s3) && isreal(s4)
+true
+```
+
+The exponential form is currently used by default since it tends to be
+the most useful for symbolic simplification. The `:direct` and `:tangent`
+forms are likely to be better for numerical evaluation.
+The default behavior of trigonometric functions can be changed
+using the `:trig_form` option of `CalciumField`.
+
+Proving equalities involving transcendental function values is a difficult
+problem in general. Calcium will sometimes fail even in elementary cases.
+Here is an example of two constant trigonometric identities where
+the first succeeds and the second fails:
+
+```julia
+julia> a = sqrt(C(2)) + 1;
+
+julia> cos(a) + cos(2*a) + cos(3*a) == sin(7*a//2)//(2*sin(a//2)) - C(1)//2
+true
+
+julia> sin(3*a) == 4 * sin(a) * sin(C(pi)//3 - a) * sin(C(pi)//3 + a)
+ERROR: Unable to perform operation (failed deciding truth of a predicate): isequal
+```
+
+A possible workaround is to fall back on a numerical comparison:
+
+```julia
+julia> abs(cos(a) + cos(2*a) + cos(3*a) - (sin(7*a//2)//(2*sin(a//2)) - C(1)//2)) <= C(10)^-100
+true
+```
+
+Of course, this is not a rigorous proof that the numbers are equal, and
+`CalciumField` is overkill here; it would be far more efficient to use
+`ArbField` directly to check that the numbers are approximately equal.
+
+**Interface**
+
+```@docs
+const_pi(C::CalciumField)
+const_euler(C::CalciumField)
+const_i(C::CalciumField)
+sqrt(a::ca)
+exp(a::ca)
+log(a::ca)
+pow(a::ca, b::Int; form::Symbol=:default)
+sin(a::ca; form::Symbol=:default)
+cos(a::ca; form::Symbol=:default)
+tan(a::ca; form::Symbol=:default)
+atan(a::ca; form::Symbol=:default)
+asin(a::ca; form::Symbol=:default)
+acos(a::ca; form::Symbol=:default)
+gamma(a::ca)
+erf(a::ca)
+erfi(a::ca)
+erfc(a::ca)
+```
 
 ## Rewriting and simplification
 

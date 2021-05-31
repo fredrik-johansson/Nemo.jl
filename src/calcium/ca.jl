@@ -651,24 +651,45 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    const_pi(C::CalciumField)
+
+Return the constant $\pi$ as an element of *C*.
+"""
 function const_pi(C::CalciumField)
    r = C()
    ccall((:ca_pi, libcalcium), Nothing, (Ref{ca}, Ref{CalciumField}), r, C)
    return r
 end
 
+@doc Markdown.doc"""
+    const_euler(C::CalciumField)
+
+Return Euler's constant $\gamma$ as an element of *C*.
+"""
 function const_euler(C::CalciumField)
    r = C()
    ccall((:ca_euler, libcalcium), Nothing, (Ref{ca}, Ref{CalciumField}), r, C)
    return r
 end
 
+@doc Markdown.doc"""
+    const_i(C::CalciumField)
+
+Return the imaginary unit $i$ as an element of *C*.
+"""
 function const_i(C::CalciumField)
    r = C()
    ccall((:ca_i, libcalcium), Nothing, (Ref{ca}, Ref{CalciumField}), r, C)
    return r
 end
 
+@doc Markdown.doc"""
+    unsigned_infinity(C::CalciumField)
+
+Return unsigned infinity ($\hat \infty$) as an element of *C*.
+This throws an exception if *C* does not allow special values.
+"""
 function unsigned_infinity(C::CalciumField)
    r = C()
    ccall((:ca_uinf, libcalcium), Nothing,
@@ -677,6 +698,12 @@ function unsigned_infinity(C::CalciumField)
    return r
 end
 
+@doc Markdown.doc"""
+    infinity(C::CalciumField)
+
+Return positive infinity ($+\infty$) as an element of *C*.
+This throws an exception if *C* does not allow special values.
+"""
 function infinity(C::CalciumField)
    r = C()
    ccall((:ca_pos_inf, libcalcium), Nothing,
@@ -685,6 +712,13 @@ function infinity(C::CalciumField)
    return r
 end
 
+@doc Markdown.doc"""
+    infinity(a::ca)
+
+Return the signed infinity ($a \cdot \infty$).
+This throws an exception if the parent of *a*
+does not allow special values.
+"""
 function infinity(a::ca)
    C = parent(a)
    r = C()
@@ -695,6 +729,12 @@ function infinity(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    undefined(C::CalciumField)
+
+Return the special value Undefined as an element of *C*.
+This throws an exception if *C* does not allow special values.
+"""
 function undefined(C::CalciumField)
    r = C()
    ccall((:ca_undefined, libcalcium), Nothing,
@@ -703,6 +743,12 @@ function undefined(C::CalciumField)
    return r
 end
 
+@doc Markdown.doc"""
+    unknown(C::CalciumField)
+
+Return the special meta-value Unknown as an element of *C*.
+This throws an exception if *C* does not allow special values.
+"""
 function unknown(C::CalciumField)
    r = C()
    ccall((:ca_unknown, libcalcium), Nothing,
@@ -717,6 +763,11 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    real(a::ca)
+
+Return the real part of *a*.
+"""
 function real(a::ca)
    C = a.parent
    r = C()
@@ -726,6 +777,11 @@ function real(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    imag(a::ca)
+
+Return the imaginary part of *a*.
+"""
 function imag(a::ca)
    C = a.parent
    r = C()
@@ -735,6 +791,11 @@ function imag(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    angle(a::ca)
+
+Return the complex argument of *a*.
+"""
 function angle(a::ca)
    C = a.parent
    r = C()
@@ -744,6 +805,15 @@ function angle(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    csgn(a::ca)
+
+Return the extension of the real sign function taking the value 1
+strictly in the right half plane, -1 strictly in the left half plane,
+and the sign of the imaginary part when on the imaginary axis.
+Equivalently, $\operatorname{csgn}(x) = x / \sqrt{x^2}$ except that the value is 0
+at zero.
+"""
 function csgn(a::ca)
    C = a.parent
    r = C()
@@ -753,6 +823,13 @@ function csgn(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    sign(a::ca)
+
+Return the complex sign of *a*, defined as zero if *a* is zero
+and as $a / |a|$ for any other complex number. This function also
+extracts the sign when *a* is a signed infinity.
+"""
 function sign(a::ca)
    C = a.parent
    r = C()
@@ -762,6 +839,11 @@ function sign(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    abs(a::ca)
+
+Return the absolute value of *a*.
+"""
 function abs(a::ca)
    C = a.parent
    r = C()
@@ -771,6 +853,15 @@ function abs(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    conj(a::ca; form::Symbol=:default)
+
+Return the complex conjugate of *a*. The optional *form* argument allows
+specifying the representation. In `:shallow` form, $\overline{a}$ is
+introduced as a new extension number if it no straightforward
+simplifications are possible.
+In `:deep` form, complex conjugation is performed recursively.
+"""
 function conj(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -790,6 +881,11 @@ function conj(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    floor(a::ca)
+
+Return the floor function of *a*.
+"""
 function floor(a::ca)
    C = a.parent
    r = C()
@@ -799,6 +895,11 @@ function floor(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    ceil(a::ca)
+
+Return the ceiling function of *a*.
+"""
 function ceil(a::ca)
    C = a.parent
    r = C()
@@ -814,6 +915,11 @@ end
 #
 ###############################################################################
 
+@doc Markdown.doc"""
+    sqrt(a::ca)
+
+Return the principal square root of *a*.
+"""
 function sqrt(a::ca)
    C = a.parent
    r = C()
@@ -823,6 +929,11 @@ function sqrt(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    exp(a::ca)
+
+Return the exponential function of *a*.
+"""
 function exp(a::ca)
    C = a.parent
    r = C()
@@ -832,6 +943,11 @@ function exp(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    log(a::ca)
+
+Return the natural logarithm of *a*.
+"""
 function log(a::ca)
    C = a.parent
    r = C()
@@ -841,6 +957,17 @@ function log(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    pow(a::ca, b::Int; form::Symbol=:default)
+
+Return *a* raised to the integer power *b*. The optional *form* argument allows
+specifying the representation. In `:default` form, this is equivalent
+to `a ^ b`, which may create a new extension number $a^b$ if the exponent *b*
+is too large (as determined by the parent option `:pow_limit` or `:prec_limit`
+depending on the case). In `:arithmetic` form, the exponentiation is
+performed arithmetically in the field of *a*, regardless of the size
+of the exponent *b*.
+"""
 function pow(a::ca, b::Int; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -857,6 +984,17 @@ function pow(a::ca, b::Int; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    sin(a::ca; form::Symbol=:default)
+
+Return the sine of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:exponential` form, the value is represented
+using complex exponentials. In `:tangent` form, the value is represented
+using tangents. In `:direct` form, the value is represented directly
+using a sine or cosine.
+"""
 function sin(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -879,6 +1017,17 @@ function sin(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    cos(a::ca; form::Symbol=:default)
+
+Return the cosine of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:exponential` form, the value is represented
+using complex exponentials. In `:tangent` form, the value is represented
+using tangents. In `:direct` form, the value is represented directly
+using a sine or cosine.
+"""
 function cos(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -901,6 +1050,17 @@ function cos(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    tan(a::ca; form::Symbol=:default)
+
+Return the tangent of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:exponential` form, the value is represented
+using complex exponentials. In `:direct` or `:tangent` form, the value is
+represented directly using tangents. In `:sine_cosine` form, the value is
+represented using sines or cosines.
+"""
 function tan(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -923,6 +1083,16 @@ function tan(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    atan(a::ca; form::Symbol=:default)
+
+Return the inverse tangent of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:logarithm` form, the value is represented
+using complex logarithms. In `:direct` or `:arctangent` form, the value is
+represented directly using arctangents.
+"""
 function atan(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -942,6 +1112,16 @@ function atan(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    asin(a::ca; form::Symbol=:default)
+
+Return the inverse sine of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:logarithm` form, the value is represented
+using complex logarithms. In `:direct` form, the value is
+represented directly using an inverse sine or cosine.
+"""
 function asin(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -961,6 +1141,16 @@ function asin(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    acos(a::ca; form::Symbol=:default)
+
+Return the inverse cosine of *a*.
+The optional *form* argument allows specifying the representation.
+In `:default` form, the result is determined by the `:trig_form` option
+of the parent object. In `:logarithm` form, the value is represented
+using complex logarithms. In `:direct` form, the value is
+represented directly using an inverse sine or cosine.
+"""
 function acos(a::ca; form::Symbol=:default)
    C = a.parent
    r = C()
@@ -980,6 +1170,11 @@ function acos(a::ca; form::Symbol=:default)
    return r
 end
 
+@doc Markdown.doc"""
+    gamma(a::ca)
+
+Return the gamma function of *a*.
+"""
 function gamma(a::ca)
    C = a.parent
    r = C()
@@ -989,6 +1184,11 @@ function gamma(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    erf(a::ca)
+
+Return the error function of *a*.
+"""
 function erf(a::ca)
    C = a.parent
    r = C()
@@ -998,6 +1198,11 @@ function erf(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    erfi(a::ca)
+
+Return the imaginary error function of *a*.
+"""
 function erfi(a::ca)
    C = a.parent
    r = C()
@@ -1007,6 +1212,11 @@ function erfi(a::ca)
    return r
 end
 
+@doc Markdown.doc"""
+    erfc(a::ca)
+
+Return the complementary error function of *a*.
+"""
 function erfc(a::ca)
    C = a.parent
    r = C()
