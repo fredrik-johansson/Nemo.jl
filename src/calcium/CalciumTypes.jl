@@ -135,14 +135,13 @@ mutable struct CalciumField <: Field
    mctx::Ptr{Nothing}
    mctx_len::Int
    options::Ptr{Int}
+   # end C struct
 
    extended::Bool
    refcount::Int
 
    function CalciumField(; extended::Bool=false, options::Dict{Symbol,Int}=Dict{Symbol,Int}())
       C = new()
-
-      # println("CREATE CALCIUMFIELD")
 
       ccall((:ca_ctx_init, libcalcium), Nothing, (Ref{CalciumField}, ), C)
       finalizer(_CalciumField_clear_fn, C)
@@ -170,7 +169,6 @@ end
 function _CalciumField_clear_fn(C::CalciumField)
    C.refcount -= 1
    if C.refcount == 0
-      # println("CLEAR CALCIUMFIELD NATURALLY")
       ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), C)
    end
 end
@@ -202,7 +200,6 @@ function _ca_clear_fn(a::ca)
         Nothing, (Ref{ca}, Ref{CalciumField}), a, a.parent)
    a.parent.refcount -= 1
    if a.parent.refcount == 0
-      # println("CLEAR CALCIUMFIELD MOST UNNATURALLY")
       ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), a.parent)
    end
 end

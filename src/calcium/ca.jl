@@ -485,6 +485,11 @@ isless(a::fmpq, b::ca) = isless(parent(b)(a), b)
 isless(a::fmpz, b::ca) = isless(parent(b)(a), b)
 isless(a::Int, b::ca) = isless(parent(b)(a), b)
 
+@doc Markdown.doc"""
+    isnumber(a::ca)
+
+Return whether *a* is a number, i.e. not an infinity or undefined.
+"""
 function isnumber(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_number, libcalcium), Cint,
@@ -492,6 +497,11 @@ function isnumber(a::ca)
    return truth_as_bool(t, :isnumber)
 end
 
+@doc Markdown.doc"""
+    iszero(a::ca)
+
+Return whether *a* is the number 0.
+"""
 function iszero(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_zero, libcalcium), Cint,
@@ -499,6 +509,11 @@ function iszero(a::ca)
    return truth_as_bool(t, :iszero)
 end
 
+@doc Markdown.doc"""
+    isone(a::ca)
+
+Return whether *a* is the number 1.
+"""
 function isone(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_one, libcalcium), Cint,
@@ -506,6 +521,11 @@ function isone(a::ca)
    return truth_as_bool(t, :isone)
 end
 
+@doc Markdown.doc"""
+    isalgebraic(a::ca)
+
+Return whether *a* is an algebraic number.
+"""
 function isalgebraic(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_algebraic, libcalcium), Cint,
@@ -513,6 +533,11 @@ function isalgebraic(a::ca)
    return truth_as_bool(t, :isalgebraic)
 end
 
+@doc Markdown.doc"""
+    isrational(a::ca)
+
+Return whether *a* is a rational number.
+"""
 function isrational(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_rational, libcalcium), Cint,
@@ -520,6 +545,11 @@ function isrational(a::ca)
    return truth_as_bool(t, :isrational)
 end
 
+@doc Markdown.doc"""
+    isinteger(a::ca)
+
+Return whether *a* is an integer.
+"""
 function isinteger(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_integer, libcalcium), Cint,
@@ -527,6 +557,12 @@ function isinteger(a::ca)
    return truth_as_bool(t, :isinteger)
 end
 
+@doc Markdown.doc"""
+    isreal(a::ca)
+
+Return whether *a* is a real number. This returns *false*
+if *a* is a pure real infinity.
+"""
 function isreal(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_real, libcalcium), Cint,
@@ -534,6 +570,12 @@ function isreal(a::ca)
    return truth_as_bool(t, :isreal)
 end
 
+@doc Markdown.doc"""
+    isimaginary(a::ca)
+
+Return whether *a* is an imaginary number. This returns *false*
+if *a* is a pure imaginary infinity.
+"""
 function isimaginary(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_imaginary, libcalcium), Cint,
@@ -541,6 +583,11 @@ function isimaginary(a::ca)
    return truth_as_bool(t, :isimaginary)
 end
 
+@doc Markdown.doc"""
+    isundefined(a::ca)
+
+Return whether *a* is the special value *Undefined*.
+"""
 function isundefined(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_undefined, libcalcium), Cint,
@@ -548,6 +595,11 @@ function isundefined(a::ca)
    return truth_as_bool(t, :isundefined)
 end
 
+@doc Markdown.doc"""
+    isinf(a::ca)
+
+Return whether *a* is any infinity (signed or unsigned).
+"""
 function isinf(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_infinity, libcalcium), Cint,
@@ -555,6 +607,11 @@ function isinf(a::ca)
    return truth_as_bool(t, :isinf)
 end
 
+@doc Markdown.doc"""
+    isuinf(a::ca)
+
+Return whether *a* is unsigned infinity.
+"""
 function isuinf(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_uinf, libcalcium), Cint,
@@ -562,6 +619,11 @@ function isuinf(a::ca)
    return truth_as_bool(t, :isuinf)
 end
 
+@doc Markdown.doc"""
+    is_signed_inf(a::ca)
+
+Return whether *a* is any signed infinity.
+"""
 function is_signed_inf(a::ca)
    C = a.parent
    t = ccall((:ca_check_is_signed_inf, libcalcium), Cint,
@@ -569,6 +631,12 @@ function is_signed_inf(a::ca)
    return truth_as_bool(t, :is_signed_inf)
 end
 
+@doc Markdown.doc"""
+    isunknown(a::ca)
+
+Return whether *a* is the special value *Unknown*. This is a representation
+property and not a mathematical predicate.
+"""
 function isunknown(a::ca)
    C = a.parent
    t = Bool(ccall((:ca_is_unknown, libcalcium), Cint,
@@ -992,9 +1060,6 @@ end
 #   Conversions
 #
 ###############################################################################
-
-# todo: wrap qqbar_get_fmpq, qqbar_get_fmpz
-# todo: field conversion versions
 
 function fmpq(a::ca)
    C = a.parent
