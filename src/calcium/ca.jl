@@ -35,6 +35,12 @@ function deepcopy_internal(a::ca, dict::IdDict)
    return r
 end
 
+function check_parent(a::ca, b::ca, throw::Bool = true)
+   b = (parent(a) != parent(b))
+   b && throw && error("Different parents")
+   return !b
+end
+
 ###############################################################################
 #
 #   Hashing
