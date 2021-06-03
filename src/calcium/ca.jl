@@ -21,9 +21,9 @@ parent_type(::Type{ca}) = CalciumField
 
 elem_type(::Type{CalciumField}) = ca
 
-base_ring(a::CalciumField) = Union{}   #  ?
+base_ring(a::CalciumField) = Union{}
 
-base_ring(a::ca) = Union{}   #  ?
+base_ring(a::ca) = Union{}
 
 isdomain_type(::Type{ca}) = true
 
