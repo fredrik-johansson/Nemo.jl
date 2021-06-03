@@ -174,6 +174,9 @@ end
 
    @test guess(CalciumQQBar, CC(2+i), 2, 10) == 2+i
 
+   Rx, x = PolynomialRing(QQBar, "x")
+   @test gcd(x^4 - 4*x^2 + 4, x^2 + sqrt(QQBar(18))*x + 4) == x + sqrt(QQBar(2))
+
 end
 
 @testset "qqbar.adhoc-operations" begin

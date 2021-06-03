@@ -31,6 +31,8 @@ base_ring(a::qqbar) = CalciumQQBar
 
 isdomain_type(::Type{qqbar}) = true
 
+check_parent(a::qqbar, b::qqbar, throw::Bool = true) = true
+
 ###############################################################################
 #
 #   Hashing
@@ -1290,7 +1292,7 @@ Convert *a* to a rational number of type *fmpq*.
 Throws if *a* is not a rational number.
 """
 function fmpq(a::qqbar)
-   !isrational(a) && throw(DomainError(a), "nonrational algebraic number")
+   !isrational(a) && throw(DomainError(a, "nonrational algebraic number"))
    p = fmpz()
    q = fmpz()
    ccall((:fmpz_poly_get_coeff_fmpz, libflint),
@@ -1308,7 +1310,7 @@ Convert *a* to an integer of type *fmpz*.
 Throws if *a* is not an integer.
 """
 function fmpz(a::qqbar)
-   !isinteger(a) && throw(DomainError(a), "noninteger algebraic number")
+   !isinteger(a) && throw(DomainError(a, "noninteger algebraic number"))
    z = fmpz()
    ccall((:fmpz_poly_get_coeff_fmpz, libflint),
         Nothing, (Ref{fmpz}, Ref{qqbar}, Int), z, a, 0)
