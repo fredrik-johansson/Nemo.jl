@@ -508,7 +508,7 @@ Of course, this is not a rigorous proof that the numbers are equal, and
 ```@docs
 const_pi(C::CalciumField)
 const_euler(C::CalciumField)
-const_i(C::CalciumField)
+onei(C::CalciumField)
 sqrt(a::ca)
 exp(a::ca)
 log(a::ca)

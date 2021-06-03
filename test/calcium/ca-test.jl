@@ -162,7 +162,7 @@ end
 
 end
 
-@testset "ca.adhoc-operations" begin
+@testset "ca.adhoc_operations" begin
    C = CalciumField()
 
    @test C(2) + C(3) == 5
@@ -319,7 +319,7 @@ Base.@irrational mynumber 1.0 BigFloat("1")
    i = sqrt(C(-1))
 
    @test const_pi(C) == C(pi)
-   @test const_i(C) == C(1im)
+   @test onei(C) == C(1im)
    @test C(1)//2 < const_euler(C)  + C(3)//5
 
    @test_throws ErrorException C(mynumber)

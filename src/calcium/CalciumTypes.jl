@@ -166,11 +166,15 @@ function options(C::CalciumField)
    return d
 end
 
-function _CalciumField_clear_fn(C::CalciumField)
+function decrement_refcount(C::CalciumField)
    C.refcount -= 1
    if C.refcount == 0
       ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), C)
    end
+end
+
+function _CalciumField_clear_fn(C::CalciumField)
+   decrement_refcount(C)
 end
 
 mutable struct ca <: FieldElem
@@ -198,9 +202,6 @@ end
 function _ca_clear_fn(a::ca)
    ccall((:ca_clear, libcalcium),
         Nothing, (Ref{ca}, Ref{CalciumField}), a, a.parent)
-   a.parent.refcount -= 1
-   if a.parent.refcount == 0
-      ccall((:ca_ctx_clear, libcalcium), Nothing, (Ref{CalciumField},), a.parent)
-   end
+   decrement_refcount(a.parent)
 end
 

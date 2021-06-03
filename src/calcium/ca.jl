@@ -4,10 +4,10 @@
 #
 ###############################################################################
 
-export ca, CalciumField, infinity, unsigned_infinity, undefined, unknown,
-       const_pi, const_euler, const_i, complex_normal_form, csgn, isnumber,
-       isimaginary, isalgebraic, isspecial, isinf, isuinf, is_signed_inf,
-       isunknown, isundefined, pow, gamma, erf, erfi, erfc
+export ca, CalciumField, complex_normal_form, const_euler, const_pi, csgn, erf,
+       erfc, erfi, gamma, infinity, isalgebraic, isimaginary, isinf, isnumber,
+       is_signed_inf, isspecial, isuinf, isundefined, isunknown, onei, pow,
+       undefined, unknown, unsigned_infinity
 
 ###############################################################################
 #
@@ -39,6 +39,31 @@ function check_parent(a::ca, b::ca, throw::Bool = true)
    b = (parent(a) != parent(b))
    b && throw && error("Different parents")
    return !b
+end
+
+function _isspecial(a::ca)
+   return (a.field & 3) != 0
+end
+
+# todo: distiguish unknown
+function check_special(a::ca)
+   if !a.parent.extended && _isspecial(a)
+      throw(DomainError(a, "Non-number result"))
+   end
+end
+
+function same_parent(a::ca, b::ca)
+   if a.parent == b.parent
+      return (a, b)
+   else
+      C = a.parent
+      r = C()
+      ccall((:ca_transfer, libcalcium), Nothing,
+         (Ref{ca}, Ref{CalciumField}, Ref{ca}, Ref{CalciumField}),
+         r, a.parent, b, b.parent)
+      check_special(r)
+      return (a, r)
+   end
 end
 
 ###############################################################################
@@ -139,34 +164,214 @@ end
 
 ###############################################################################
 #
-#   Arithmetic
+#   Comparison and predicates
 #
 ###############################################################################
 
-function _isspecial(a::ca)
-   return (a.field & 3) != 0
+function ==(a::ca, b::ca)
+   a, b = same_parent(a, b)
+   C = a.parent
+   t = ccall((:ca_check_equal, libcalcium), Cint,
+        (Ref{ca}, Ref{ca}, Ref{CalciumField}), a, b, C)
+   return truth_as_bool(t, :isequal)
 end
 
-# todo: distiguish unknown
-function check_special(a::ca)
-   if !a.parent.extended && _isspecial(a)
-      throw(DomainError(a, "Non-number result"))
-   end
+function isless(a::ca, b::ca)
+   a, b = same_parent(a, b)
+   C = a.parent
+   t = ccall((:ca_check_lt, libcalcium), Cint,
+        (Ref{ca}, Ref{ca}, Ref{CalciumField}), a, b, C)
+   return truth_as_bool(t, :isless)
 end
 
-function same_parent(a::ca, b::ca)
-   if a.parent == b.parent
-      return (a, b)
-   else
-      C = a.parent
-      r = C()
-      ccall((:ca_transfer, libcalcium), Nothing,
-         (Ref{ca}, Ref{CalciumField}, Ref{ca}, Ref{CalciumField}),
-         r, a.parent, b, b.parent)
-      check_special(r)
-      return (a, r)
-   end
+isless(a::ca, b::qqbar) = isless(a, parent(a)(b))
+isless(a::ca, b::fmpz) = isless(a, parent(a)(b))
+isless(a::ca, b::fmpq) = isless(a, parent(a)(b))
+isless(a::ca, b::Int) = isless(a, parent(a)(b))
+isless(a::qqbar, b::ca) = isless(parent(b)(a), b)
+isless(a::fmpq, b::ca) = isless(parent(b)(a), b)
+isless(a::fmpz, b::ca) = isless(parent(b)(a), b)
+isless(a::Int, b::ca) = isless(parent(b)(a), b)
+
+@doc Markdown.doc"""
+    isnumber(a::ca)
+
+Return whether `a` is a number, i.e. not an infinity or undefined.
+"""
+function isnumber(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_number, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isnumber)
 end
+
+@doc Markdown.doc"""
+    iszero(a::ca)
+
+Return whether `a` is the number 0.
+"""
+function iszero(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_zero, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :iszero)
+end
+
+@doc Markdown.doc"""
+    isone(a::ca)
+
+Return whether `a` is the number 1.
+"""
+function isone(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_one, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isone)
+end
+
+@doc Markdown.doc"""
+    isalgebraic(a::ca)
+
+Return whether `a` is an algebraic number.
+"""
+function isalgebraic(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_algebraic, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isalgebraic)
+end
+
+@doc Markdown.doc"""
+    isrational(a::ca)
+
+Return whether `a` is a rational number.
+"""
+function isrational(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_rational, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isrational)
+end
+
+@doc Markdown.doc"""
+    isinteger(a::ca)
+
+Return whether `a` is an integer.
+"""
+function isinteger(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_integer, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isinteger)
+end
+
+@doc Markdown.doc"""
+    isreal(a::ca)
+
+Return whether `a` is a real number. This returns `false`
+if `a` is a pure real infinity.
+"""
+function isreal(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_real, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isreal)
+end
+
+@doc Markdown.doc"""
+    isimaginary(a::ca)
+
+Return whether `a` is an imaginary number. This returns `false`
+if `a` is a pure imaginary infinity.
+"""
+function isimaginary(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_imaginary, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isimaginary)
+end
+
+@doc Markdown.doc"""
+    isundefined(a::ca)
+
+Return whether `a` is the special value *Undefined*.
+"""
+function isundefined(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_undefined, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isundefined)
+end
+
+@doc Markdown.doc"""
+    isinf(a::ca)
+
+Return whether `a` is any infinity (signed or unsigned).
+"""
+function isinf(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_infinity, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isinf)
+end
+
+@doc Markdown.doc"""
+    isuinf(a::ca)
+
+Return whether `a` is unsigned infinity.
+"""
+function isuinf(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_uinf, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :isuinf)
+end
+
+@doc Markdown.doc"""
+    is_signed_inf(a::ca)
+
+Return whether `a` is any signed infinity.
+"""
+function is_signed_inf(a::ca)
+   C = a.parent
+   t = ccall((:ca_check_is_signed_inf, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C)
+   return truth_as_bool(t, :is_signed_inf)
+end
+
+@doc Markdown.doc"""
+    isunknown(a::ca)
+
+Return whether `a` is the special value *Unknown*. This is a representation
+property and not a mathematical predicate.
+"""
+function isunknown(a::ca)
+   C = a.parent
+   t = Bool(ccall((:ca_is_unknown, libcalcium), Cint,
+        (Ref{ca}, Ref{CalciumField}), a, C))
+   return t
+end
+
+###############################################################################
+#
+#   Unary operations
+#
+###############################################################################
+
+function -(a::ca)
+   C = a.parent
+   r = C()
+   ccall((:ca_neg, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
+   check_special(r)
+   return r
+end
+
+###############################################################################
+#
+#   Binary operations
+#
+###############################################################################
 
 function +(a::ca, b::ca)
    a, b = same_parent(a, b)
@@ -177,6 +382,31 @@ function +(a::ca, b::ca)
    check_special(r)
    return r
 end
+
+function -(a::Int, b::ca)
+   C = b.parent
+   r = C()
+   ccall((:ca_si_sub, libcalcium), Nothing,
+         (Ref{ca}, Int, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+function *(a::ca, b::ca)
+   a, b = same_parent(a, b)
+   C = a.parent
+   r = C()
+   ccall((:ca_mul, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
+   check_special(r)
+   return r
+end
+
+###############################################################################
+#
+#   Ad hoc binary operations
+#
+###############################################################################
 
 function +(a::ca, b::Int)
    C = a.parent
@@ -206,6 +436,11 @@ function +(a::ca, b::fmpq)
 end
 
 +(a::ca, b::qqbar) = a + parent(a)(b)
+
++(a::Int, b::ca) = b + a
++(a::fmpz, b::ca) = b + a
++(a::fmpq, b::ca) = b + a
++(a::qqbar, b::ca) = b + a
 
 function -(a::ca, b::ca)
    a, b = same_parent(a, b)
@@ -246,15 +481,6 @@ end
 
 -(a::ca, b::qqbar) = a - parent(a)(b)
 
-function -(a::Int, b::ca)
-   C = b.parent
-   r = C()
-   ccall((:ca_si_sub, libcalcium), Nothing,
-         (Ref{ca}, Int, Ref{ca}, Ref{CalciumField}), r, a, b, C)
-   check_special(r)
-   return r
-end
-
 function -(a::fmpz, b::ca)
    C = b.parent
    r = C()
@@ -275,15 +501,6 @@ end
 
 -(a::qqbar, b::ca) = parent(b)(a) - b
 
-function *(a::ca, b::ca)
-   a, b = same_parent(a, b)
-   C = a.parent
-   r = C()
-   ccall((:ca_mul, libcalcium), Nothing,
-         (Ref{ca}, Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, b, C)
-   check_special(r)
-   return r
-end
 
 function *(a::ca, b::Int)
    C = a.parent
@@ -319,6 +536,11 @@ end
 *(a::fmpq, b::ca) = b * a
 *(a::qqbar, b::ca) = b * a
 
+###############################################################################
+#
+#   Division
+#
+###############################################################################
 
 function //(a::ca, b::ca)
    a, b = same_parent(a, b)
@@ -329,6 +551,23 @@ function //(a::ca, b::ca)
    check_special(r)
    return r
 end
+
+divexact(a::ca, b::ca) = a // b
+
+function inv(a::ca)
+   C = a.parent
+   r = C()
+   ccall((:ca_inv, libcalcium), Nothing,
+         (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
+   check_special(r)
+   return r
+end
+
+###############################################################################
+#
+#   Ad hoc division
+#
+###############################################################################
 
 function //(a::ca, b::Int)
    C = a.parent
@@ -388,7 +627,6 @@ end
 
 //(a::qqbar, b::ca) = parent(b)(a) // b
 
-divexact(a::ca, b::ca) = a // b
 divexact(a::ca, b::Int) = a // b
 divexact(a::ca, b::fmpz) = a // b
 divexact(a::ca, b::fmpq) = a // b
@@ -397,6 +635,12 @@ divexact(a::Int, b::ca) = a // b
 divexact(a::fmpz, b::ca) = a // b
 divexact(a::fmpq, b::ca) = a // b
 divexact(a::qqbar, b::ca) = a // b
+
+###############################################################################
+#
+#   Powering
+#
+###############################################################################
 
 function ^(a::ca, b::ca)
    a, b = same_parent(a, b)
@@ -442,214 +686,6 @@ end
 ^(a::fmpq, b::ca) = parent(b)(a) ^ b
 ^(a::qqbar, b::ca) = parent(b)(a) ^ b
 
-function -(a::ca)
-   C = a.parent
-   r = C()
-   ccall((:ca_neg, libcalcium), Nothing,
-         (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
-   check_special(r)
-   return r
-end
-
-function inv(a::ca)
-   C = a.parent
-   r = C()
-   ccall((:ca_inv, libcalcium), Nothing,
-         (Ref{ca}, Ref{ca}, Ref{CalciumField}), r, a, C)
-   check_special(r)
-   return r
-end
-
-###############################################################################
-#
-#   Comparison and predicates
-#
-###############################################################################
-
-function ==(a::ca, b::ca)
-   a, b = same_parent(a, b)
-   C = a.parent
-   t = ccall((:ca_check_equal, libcalcium), Cint,
-        (Ref{ca}, Ref{ca}, Ref{CalciumField}), a, b, C)
-   return truth_as_bool(t, :isequal)
-end
-
-function isless(a::ca, b::ca)
-   a, b = same_parent(a, b)
-   C = a.parent
-   t = ccall((:ca_check_lt, libcalcium), Cint,
-        (Ref{ca}, Ref{ca}, Ref{CalciumField}), a, b, C)
-   return truth_as_bool(t, :isless)
-end
-
-isless(a::ca, b::qqbar) = isless(a, parent(a)(b))
-isless(a::ca, b::fmpz) = isless(a, parent(a)(b))
-isless(a::ca, b::fmpq) = isless(a, parent(a)(b))
-isless(a::ca, b::Int) = isless(a, parent(a)(b))
-isless(a::qqbar, b::ca) = isless(parent(b)(a), b)
-isless(a::fmpq, b::ca) = isless(parent(b)(a), b)
-isless(a::fmpz, b::ca) = isless(parent(b)(a), b)
-isless(a::Int, b::ca) = isless(parent(b)(a), b)
-
-@doc Markdown.doc"""
-    isnumber(a::ca)
-
-Return whether *a* is a number, i.e. not an infinity or undefined.
-"""
-function isnumber(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_number, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isnumber)
-end
-
-@doc Markdown.doc"""
-    iszero(a::ca)
-
-Return whether *a* is the number 0.
-"""
-function iszero(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_zero, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :iszero)
-end
-
-@doc Markdown.doc"""
-    isone(a::ca)
-
-Return whether *a* is the number 1.
-"""
-function isone(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_one, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isone)
-end
-
-@doc Markdown.doc"""
-    isalgebraic(a::ca)
-
-Return whether *a* is an algebraic number.
-"""
-function isalgebraic(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_algebraic, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isalgebraic)
-end
-
-@doc Markdown.doc"""
-    isrational(a::ca)
-
-Return whether *a* is a rational number.
-"""
-function isrational(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_rational, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isrational)
-end
-
-@doc Markdown.doc"""
-    isinteger(a::ca)
-
-Return whether *a* is an integer.
-"""
-function isinteger(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_integer, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isinteger)
-end
-
-@doc Markdown.doc"""
-    isreal(a::ca)
-
-Return whether *a* is a real number. This returns *false*
-if *a* is a pure real infinity.
-"""
-function isreal(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_real, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isreal)
-end
-
-@doc Markdown.doc"""
-    isimaginary(a::ca)
-
-Return whether *a* is an imaginary number. This returns *false*
-if *a* is a pure imaginary infinity.
-"""
-function isimaginary(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_imaginary, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isimaginary)
-end
-
-@doc Markdown.doc"""
-    isundefined(a::ca)
-
-Return whether *a* is the special value *Undefined*.
-"""
-function isundefined(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_undefined, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isundefined)
-end
-
-@doc Markdown.doc"""
-    isinf(a::ca)
-
-Return whether *a* is any infinity (signed or unsigned).
-"""
-function isinf(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_infinity, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isinf)
-end
-
-@doc Markdown.doc"""
-    isuinf(a::ca)
-
-Return whether *a* is unsigned infinity.
-"""
-function isuinf(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_uinf, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :isuinf)
-end
-
-@doc Markdown.doc"""
-    is_signed_inf(a::ca)
-
-Return whether *a* is any signed infinity.
-"""
-function is_signed_inf(a::ca)
-   C = a.parent
-   t = ccall((:ca_check_is_signed_inf, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C)
-   return truth_as_bool(t, :is_signed_inf)
-end
-
-@doc Markdown.doc"""
-    isunknown(a::ca)
-
-Return whether *a* is the special value *Unknown*. This is a representation
-property and not a mathematical predicate.
-"""
-function isunknown(a::ca)
-   C = a.parent
-   t = Bool(ccall((:ca_is_unknown, libcalcium), Cint,
-        (Ref{ca}, Ref{CalciumField}), a, C))
-   return t
-end
-
 
 ###############################################################################
 #
@@ -660,7 +696,7 @@ end
 @doc Markdown.doc"""
     const_pi(C::CalciumField)
 
-Return the constant $\pi$ as an element of *C*.
+Return the constant $\pi$ as an element of `C`.
 """
 function const_pi(C::CalciumField)
    r = C()
@@ -671,7 +707,7 @@ end
 @doc Markdown.doc"""
     const_euler(C::CalciumField)
 
-Return Euler's constant $\gamma$ as an element of *C*.
+Return Euler's constant $\gamma$ as an element of `C`.
 """
 function const_euler(C::CalciumField)
    r = C()
@@ -680,11 +716,11 @@ function const_euler(C::CalciumField)
 end
 
 @doc Markdown.doc"""
-    const_i(C::CalciumField)
+    onei(C::CalciumField)
 
-Return the imaginary unit $i$ as an element of *C*.
+Return the imaginary unit $i$ as an element of `C`.
 """
-function const_i(C::CalciumField)
+function onei(C::CalciumField)
    r = C()
    ccall((:ca_i, libcalcium), Nothing, (Ref{ca}, Ref{CalciumField}), r, C)
    return r
@@ -693,8 +729,8 @@ end
 @doc Markdown.doc"""
     unsigned_infinity(C::CalciumField)
 
-Return unsigned infinity ($\hat \infty$) as an element of *C*.
-This throws an exception if *C* does not allow special values.
+Return unsigned infinity ($\hat \infty$) as an element of `C`.
+This throws an exception if `C` does not allow special values.
 """
 function unsigned_infinity(C::CalciumField)
    r = C()
@@ -707,8 +743,8 @@ end
 @doc Markdown.doc"""
     infinity(C::CalciumField)
 
-Return positive infinity ($+\infty$) as an element of *C*.
-This throws an exception if *C* does not allow special values.
+Return positive infinity ($+\infty$) as an element of `C`.
+This throws an exception if `C` does not allow special values.
 """
 function infinity(C::CalciumField)
    r = C()
@@ -722,7 +758,7 @@ end
     infinity(a::ca)
 
 Return the signed infinity ($a \cdot \infty$).
-This throws an exception if the parent of *a*
+This throws an exception if the parent of `a`
 does not allow special values.
 """
 function infinity(a::ca)
@@ -738,8 +774,8 @@ end
 @doc Markdown.doc"""
     undefined(C::CalciumField)
 
-Return the special value Undefined as an element of *C*.
-This throws an exception if *C* does not allow special values.
+Return the special value Undefined as an element of `C`.
+This throws an exception if `C` does not allow special values.
 """
 function undefined(C::CalciumField)
    r = C()
@@ -752,8 +788,8 @@ end
 @doc Markdown.doc"""
     unknown(C::CalciumField)
 
-Return the special meta-value Unknown as an element of *C*.
-This throws an exception if *C* does not allow special values.
+Return the special meta-value Unknown as an element of `C`.
+This throws an exception if `C` does not allow special values.
 """
 function unknown(C::CalciumField)
    r = C()
@@ -772,7 +808,7 @@ end
 @doc Markdown.doc"""
     real(a::ca)
 
-Return the real part of *a*.
+Return the real part of `a`.
 """
 function real(a::ca)
    C = a.parent
@@ -786,7 +822,7 @@ end
 @doc Markdown.doc"""
     imag(a::ca)
 
-Return the imaginary part of *a*.
+Return the imaginary part of `a`.
 """
 function imag(a::ca)
    C = a.parent
@@ -800,7 +836,7 @@ end
 @doc Markdown.doc"""
     angle(a::ca)
 
-Return the complex argument of *a*.
+Return the complex argument of `a`.
 """
 function angle(a::ca)
    C = a.parent
@@ -832,9 +868,9 @@ end
 @doc Markdown.doc"""
     sign(a::ca)
 
-Return the complex sign of *a*, defined as zero if *a* is zero
+Return the complex sign of `a`, defined as zero if `a` is zero
 and as $a / |a|$ for any other complex number. This function also
-extracts the sign when *a* is a signed infinity.
+extracts the sign when `a` is a signed infinity.
 """
 function sign(a::ca)
    C = a.parent
@@ -848,7 +884,7 @@ end
 @doc Markdown.doc"""
     abs(a::ca)
 
-Return the absolute value of *a*.
+Return the absolute value of `a`.
 """
 function abs(a::ca)
    C = a.parent
@@ -862,7 +898,7 @@ end
 @doc Markdown.doc"""
     conj(a::ca; form::Symbol=:default)
 
-Return the complex conjugate of *a*. The optional *form* argument allows
+Return the complex conjugate of `a`. The optional `form` argument allows
 specifying the representation. In `:shallow` form, $\overline{a}$ is
 introduced as a new extension number if it no straightforward
 simplifications are possible.
@@ -890,7 +926,7 @@ end
 @doc Markdown.doc"""
     floor(a::ca)
 
-Return the floor function of *a*.
+Return the floor function of `a`.
 """
 function floor(a::ca)
    C = a.parent
@@ -904,7 +940,7 @@ end
 @doc Markdown.doc"""
     ceil(a::ca)
 
-Return the ceiling function of *a*.
+Return the ceiling function of `a`.
 """
 function ceil(a::ca)
    C = a.parent
@@ -924,7 +960,7 @@ end
 @doc Markdown.doc"""
     sqrt(a::ca)
 
-Return the principal square root of *a*.
+Return the principal square root of `a`.
 """
 function sqrt(a::ca)
    C = a.parent
@@ -938,7 +974,7 @@ end
 @doc Markdown.doc"""
     exp(a::ca)
 
-Return the exponential function of *a*.
+Return the exponential function of `a`.
 """
 function exp(a::ca)
    C = a.parent
@@ -952,7 +988,7 @@ end
 @doc Markdown.doc"""
     log(a::ca)
 
-Return the natural logarithm of *a*.
+Return the natural logarithm of `a`.
 """
 function log(a::ca)
    C = a.parent
@@ -966,13 +1002,13 @@ end
 @doc Markdown.doc"""
     pow(a::ca, b::Int; form::Symbol=:default)
 
-Return *a* raised to the integer power *b*. The optional *form* argument allows
+Return *a* raised to the integer power `b`. The optional `form` argument allows
 specifying the representation. In `:default` form, this is equivalent
-to `a ^ b`, which may create a new extension number $a^b$ if the exponent *b*
+to `a ^ b`, which may create a new extension number $a^b$ if the exponent `b`
 is too large (as determined by the parent option `:pow_limit` or `:prec_limit`
 depending on the case). In `:arithmetic` form, the exponentiation is
-performed arithmetically in the field of *a*, regardless of the size
-of the exponent *b*.
+performed arithmetically in the field of `a`, regardless of the size
+of the exponent `b`.
 """
 function pow(a::ca, b::Int; form::Symbol=:default)
    C = a.parent
@@ -993,8 +1029,8 @@ end
 @doc Markdown.doc"""
     sin(a::ca; form::Symbol=:default)
 
-Return the sine of *a*.
-The optional *form* argument allows specifying the representation.
+Return the sine of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:exponential` form, the value is represented
 using complex exponentials. In `:tangent` form, the value is represented
@@ -1026,8 +1062,8 @@ end
 @doc Markdown.doc"""
     cos(a::ca; form::Symbol=:default)
 
-Return the cosine of *a*.
-The optional *form* argument allows specifying the representation.
+Return the cosine of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:exponential` form, the value is represented
 using complex exponentials. In `:tangent` form, the value is represented
@@ -1059,8 +1095,8 @@ end
 @doc Markdown.doc"""
     tan(a::ca; form::Symbol=:default)
 
-Return the tangent of *a*.
-The optional *form* argument allows specifying the representation.
+Return the tangent of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:exponential` form, the value is represented
 using complex exponentials. In `:direct` or `:tangent` form, the value is
@@ -1092,8 +1128,8 @@ end
 @doc Markdown.doc"""
     atan(a::ca; form::Symbol=:default)
 
-Return the inverse tangent of *a*.
-The optional *form* argument allows specifying the representation.
+Return the inverse tangent of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:logarithm` form, the value is represented
 using complex logarithms. In `:direct` or `:arctangent` form, the value is
@@ -1121,8 +1157,8 @@ end
 @doc Markdown.doc"""
     asin(a::ca; form::Symbol=:default)
 
-Return the inverse sine of *a*.
-The optional *form* argument allows specifying the representation.
+Return the inverse sine of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:logarithm` form, the value is represented
 using complex logarithms. In `:direct` form, the value is
@@ -1150,8 +1186,8 @@ end
 @doc Markdown.doc"""
     acos(a::ca; form::Symbol=:default)
 
-Return the inverse cosine of *a*.
-The optional *form* argument allows specifying the representation.
+Return the inverse cosine of `a`.
+The optional `form` argument allows specifying the representation.
 In `:default` form, the result is determined by the `:trig_form` option
 of the parent object. In `:logarithm` form, the value is represented
 using complex logarithms. In `:direct` form, the value is
@@ -1179,7 +1215,7 @@ end
 @doc Markdown.doc"""
     gamma(a::ca)
 
-Return the gamma function of *a*.
+Return the gamma function of `a`.
 """
 function gamma(a::ca)
    C = a.parent
@@ -1193,7 +1229,7 @@ end
 @doc Markdown.doc"""
     erf(a::ca)
 
-Return the error function of *a*.
+Return the error function of `a`.
 """
 function erf(a::ca)
    C = a.parent
@@ -1207,7 +1243,7 @@ end
 @doc Markdown.doc"""
     erfi(a::ca)
 
-Return the imaginary error function of *a*.
+Return the imaginary error function of `a`.
 """
 function erfi(a::ca)
    C = a.parent
@@ -1221,7 +1257,7 @@ end
 @doc Markdown.doc"""
     erfc(a::ca)
 
-Return the complementary error function of *a*.
+Return the complementary error function of `a`.
 """
 function erfc(a::ca)
    C = a.parent

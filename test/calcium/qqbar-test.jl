@@ -179,7 +179,7 @@ end
 
 end
 
-@testset "qqbar.adhoc-operations" begin
+@testset "qqbar.adhoc_operations" begin
    R = CalciumQQBar
 
    @test qqbar(2) + qqbar(3) == 5
